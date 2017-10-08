@@ -1,0 +1,13 @@
+# DSN para conectar ao banco de dados
+# Lembrar de alterar para a variavel de ambiente "API_DSN" quando estiver em produção
+dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
+
+# Configuração do JWT
+# Lembrar de alterar para as variaveis de ambiente quando estiver em produção
+#   API_JWT_VERIFICATION_KEY
+#   API_JWT_SIGNING_KEY
+jwt_verification_key: "QfCAH04Cob7b71QCqy738vw5XGSnFZ9d"
+jwt_signing_key: "QfCAH04Cob7b71QCqy738vw5XGSnFZ9d"
+# Se quiser alterar o método assinatura do jwt
+# tire o comentário da linha a baixo e mude o valor
+#jwt_signing_method: "HS256"
