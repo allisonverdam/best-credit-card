@@ -1,16 +1,16 @@
 package services
 
 import (
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
 )
 
 // personDAO specifies the interface of the person DAO needed by PersonService.
 type personDAO interface {
 	// Get returns the person with the specified person ID.
 	Get(rs app.RequestScope, id int) (*models.Person, error)
-	// Get returns the person with the specified person ID.
-	GetByPersonName(rs app.RequestScope, personname string) (*models.Person, error)
+	// Get returns the person with the specified person username.
+	GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error)
 	// Count returns the number of persons.
 	Count(rs app.RequestScope) (int, error)
 	// Query returns the list of persons with the given offset and limit.
@@ -38,9 +38,9 @@ func (s *PersonService) Get(rs app.RequestScope, id int) (*models.Person, error)
 	return s.dao.Get(rs, id)
 }
 
-// Get returns the person with the specified the person ID.
-func (s *PersonService) GetByPersonName(rs app.RequestScope, personname string) (*models.Person, error) {
-	return s.dao.GetByPersonName(rs, personname)
+// Get returns the person with the specified the person username.
+func (s *PersonService) GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error) {
+	return s.dao.GetPersonByUserName(rs, username)
 }
 
 // Create creates a new person.

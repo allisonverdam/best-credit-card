@@ -3,8 +3,8 @@ package controllers
 import (
 	"strconv"
 
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
 	routing "github.com/go-ozzo/ozzo-routing"
 )
 

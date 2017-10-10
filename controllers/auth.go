@@ -3,10 +3,10 @@ package controllers
 import (
 	"time"
 
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/daos"
-	"github.com/allisonverdam/go-api-mcc/errors"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/daos"
+	"github.com/allisonverdam/best-credit-card/errors"
+	"github.com/allisonverdam/best-credit-card/models"
 	jwt "github.com/dgrijalva/jwt-go"
 	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/auth"
@@ -53,7 +53,7 @@ func JWTHandler(c *routing.Context, j *jwt.Token) error {
 
 func authenticate(c Credential, personDao *daos.PersonDAO, r *routing.Context) *models.Person {
 	rs := app.GetRequestScope(r)
-	person, err := personDao.GetByPersonName(rs, c.Username)
+	person, err := personDao.GetPersonByUserName(rs, c.Username)
 	if err != nil {
 		return nil
 	}

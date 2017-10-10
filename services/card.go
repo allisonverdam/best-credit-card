@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
 )
 
 // cardDAO specifies the interface of the card DAO needed by CardService.
@@ -10,7 +10,7 @@ type cardDAO interface {
 	// Get returns the card with the specified card ID.
 	Get(rs app.RequestScope, id int) (*models.Card, error)
 	// Get returns the card with the specified card ID.
-	GetByPersonId(rs app.RequestScope, personId int) ([]models.Card, error)
+	GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error)
 	// Count returns the number of cards.
 	Count(rs app.RequestScope) (int, error)
 	// Query returns the list of cards with the given offset and limit.
@@ -39,8 +39,8 @@ func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
 }
 
 // Get returns the card with the specified the card ID.
-func (s *CardService) GetByPersonId(rs app.RequestScope, personId int) ([]models.Card, error) {
-	return s.dao.GetByPersonId(rs, personId)
+func (s *CardService) GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error) {
+	return s.dao.GetCardsByPersonId(rs, personId)
 }
 
 // Create creates a new card.

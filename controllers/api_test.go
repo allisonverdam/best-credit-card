@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/testdata"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/testdata"
 	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/content"
 	"github.com/stretchr/testify/assert"

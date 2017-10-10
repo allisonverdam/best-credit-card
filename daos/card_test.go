@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
-	"github.com/allisonverdam/go-api-mcc/testdata"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
+	"github.com/allisonverdam/best-credit-card/testdata"
 	"github.com/stretchr/testify/assert"
 )
 

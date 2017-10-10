@@ -1,8 +1,8 @@
 package daos
 
 import (
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
@@ -24,7 +24,7 @@ func (dao *CardDAO) Get(rs app.RequestScope, id int) (*models.Card, error) {
 // GetCardsByPersonId retorna uma lista de cartões de uma pessoa com id pespecífico.
 func (dao *CardDAO) GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error) {
 	cards := []models.Card{}
-	err := rs.Tx().Select().Where(dbx.HashExp{"person_id": personId}).OrderBy("cc_limit").OrderBy("").All(&cards)
+	err := rs.Tx().Select().Where(dbx.HashExp{"person_id": personId}).OrderBy("cc_limit").All(&cards)
 	return cards, err
 }
 
@@ -41,6 +41,7 @@ func (dao *CardDAO) Update(rs app.RequestScope, id int, card *models.Card) error
 	card.Id = id
 	return rs.Tx().Model(card).Exclude("Id").Update()
 }
+
 // Query retrieves the card records with the specified offset and limit from the database.
 // Delete deleta um cartão com id específico.
 func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {

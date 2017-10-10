@@ -3,8 +3,8 @@ package controllers
 import (
 	"strconv"
 
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
 	routing "github.com/go-ozzo/ozzo-routing"
 )
 
@@ -12,7 +12,7 @@ type (
 	// personService especifica a interface que é utilizada pelo personResource.
 	personService interface {
 		Get(rs app.RequestScope, id int) (*models.Person, error)
-		GetPersonByName(rs app.RequestScope, personname string) (*models.Person, error)
+		GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Person, error)
 		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Person) (*models.Person, error)
@@ -30,7 +30,7 @@ type (
 func ServePersonResource(rg *routing.RouteGroup, service personService) {
 	r := &personResource{service}
 	rg.Get("/persons/<id>", r.get)
-	rg.Get("/persons/<personname>", r.GetPersonByName)
+	rg.Get("/persons/<username>", r.GetPersonByUserName)
 	rg.Get("/persons", r.query)
 	rg.Post("/persons", r.create)
 	rg.Put("/persons/<id>", r.update)
@@ -51,8 +51,8 @@ func (r *personResource) get(c *routing.Context) error {
 	return c.Write(response)
 }
 
-func (r *personResource) GetPersonByName(c *routing.Context) error {
-	response, err := r.service.GetPersonByName(app.GetRequestScope(c), c.Param("personname"))
+func (r *personResource) GetPersonByUserName(c *routing.Context) error {
+	response, err := r.service.GetPersonByUserName(app.GetRequestScope(c), c.Param("username"))
 	if err != nil {
 		return err
 	}

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/allisonverdam/go-api-mcc/daos"
-	"github.com/allisonverdam/go-api-mcc/services"
-	"github.com/allisonverdam/go-api-mcc/testdata"
+	"github.com/allisonverdam/best-credit-card/daos"
+	"github.com/allisonverdam/best-credit-card/services"
+	"github.com/allisonverdam/best-credit-card/testdata"
 )
 
 func TestCard(t *testing.T) {

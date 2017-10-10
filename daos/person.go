@@ -1,8 +1,8 @@
 package daos
 
 import (
-	"github.com/allisonverdam/go-api-mcc/app"
-	"github.com/allisonverdam/go-api-mcc/models"
+	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/models"
 	"github.com/go-ozzo/ozzo-dbx"
 )
 
@@ -22,9 +22,9 @@ func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
 }
 
 // Get reads the person with the specified ID from the database.
-func (dao *PersonDAO) GetPersonByName(rs app.RequestScope, personname string) (*models.Person, error) {
+func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error) {
 	var person models.Person
-	err := rs.Tx().Select().Where(dbx.Like("username", personname)).One(&person)
+	err := rs.Tx().Select().Where(dbx.Like("username", username)).One(&person)
 	return &person, err
 }
 
