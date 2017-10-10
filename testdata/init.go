@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/allisonverdam/go-api-mcc/app"
+	"github.com/allisonverdam/best-credit-card/app"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	_ "github.com/lib/pq"
 )
