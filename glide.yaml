@@ -1,4 +1,4 @@
-package: github.com/allisonverdam/go-api-mcc
+package: github.com/allisonverdam/best-credit-card
 import:
 - package: github.com/Sirupsen/logrus
   version: ^0.10
