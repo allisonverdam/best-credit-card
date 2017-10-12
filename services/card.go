@@ -39,6 +39,14 @@ func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
 }
 
 // Get returns the card with the specified the card ID.
+func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error) {
+	if err := order.Validate(); err != nil {
+		return nil, err
+	}
+	return s.dao.GetCardsByPersonId(rs, personId)
+}
+
+// Get returns the card with the specified the card ID.
 func (s *CardService) GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error) {
 	return s.dao.GetCardsByPersonId(rs, personId)
 }

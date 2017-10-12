@@ -12,6 +12,7 @@ type (
 	// cardService especifica a interface que é utilizada pelo cardResource
 	cardService interface {
 		Get(rs app.RequestScope, id int) (*models.Card, error)
+		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
 		GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Card, error)
 		Count(rs app.RequestScope) (int, error)
@@ -32,19 +33,43 @@ func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	rg.Get("/cards/<id>", r.get)
 	rg.Get("/cards", r.query)
 	rg.Post("/cards", r.create)
-	rg.Post("/bestCard", r.getBestCard)
+	rg.Post("/bestCard", r.getBestCards)
 	rg.Put("/cards/<id>", r.update)
 	rg.Delete("/cards/<id>", r.delete)
 }
 
-// Função que retorna o melhor cartão para a compra
-func (r *cardResource) getBestCard(c *routing.Context) error {
-	response, err := r.service.GetCardsByPersonId(app.GetRequestScope(c), app.GetRequestScope(c).UserID())
+// getBestCards que retorna o melhor cartão para a compra
+func (r *cardResource) getBestCards(c *routing.Context) error {
+	var order models.Order
+	if err := c.Read(&order); err != nil {
+		return err
+	}
+
+	response, err := r.service.GetBestCards(app.GetRequestScope(c), app.GetRequestScope(c).UserID(), &order)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	var bestCards []models.Card
+	price, err := strconv.ParseFloat(*&order.Price, 64)
+	if err != nil {
+		return err
+	}
+
+	for _, card := range response {
+		if price <= 0 {
+			break
+		}
+		if price > card.Limit {
+			bestCards = append(bestCards, card)
+			price -= card.Limit
+		} else {
+			bestCards = append(bestCards, card)
+			break
+		}
+	}
+
+	return c.Write(bestCards)
 }
 
 func (r *cardResource) get(c *routing.Context) error {
