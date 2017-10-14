@@ -44,7 +44,7 @@ func main() {
 	http.Handle("/", buildRouter(logger, db))
 
 	// start the server
-	address := fmt.Sprintf(":%v", os.Getenv("PORT", app.Config.ServerPort))
+	address := map[bool] string { true: os.Getenv("PORT"), false: app.Config.ServerPort }[ os.Getenv("PORT") != "" ]
 	logger.Infof("Server %v is started at %v\n", app.Version, address)
 	panic(http.ListenAndServe(address, nil))
 }
