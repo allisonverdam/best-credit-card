@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/allisonverdam/best-credit-card/app"
@@ -43,7 +44,7 @@ func main() {
 	http.Handle("/", buildRouter(logger, db))
 
 	// start the server
-	address := fmt.Sprintf(":%v", app.Config.ServerPort)
+	address := fmt.Sprintf(":%v", os.Getenv("PORT") || app.Config.ServerPort)
 	logger.Infof("Server %v is started at %v\n", app.Version, address)
 	panic(http.ListenAndServe(address, nil))
 }
