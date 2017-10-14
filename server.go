@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/allisonverdam/best-credit-card/app"
@@ -44,7 +45,7 @@ func main() {
 	http.Handle("/", buildRouter(logger, db))
 
 	// start the server
-	address := map[bool] string { true: os.Getenv("PORT"), false: app.Config.ServerPort }[ os.Getenv("PORT") != "" ]
+	address := map[bool] string { true: os.Getenv("PORT"), false: strconv.Itoa(app.Config.ServerPort) }[ os.Getenv("PORT") != "" ]
 	logger.Infof("Server %v is started at %v\n", app.Version, address)
 	panic(http.ListenAndServe(address, nil))
 }
