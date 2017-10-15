@@ -12,9 +12,6 @@ CREATE TABLE person
     password VARCHAR(120)
 );
 
-	-- Id       int     `json:"id" db:"id"`
-	-- Limit    float64 `json:"maximum_limit" db:"maximum_limit"`
-	-- PersonId string  `json:"person_id" db:"person_id"`
 
 CREATE TABLE wallet
 (
