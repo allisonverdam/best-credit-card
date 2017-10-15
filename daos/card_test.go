@@ -35,7 +35,7 @@ func TestCardDAO(t *testing.T) {
 				CVV:            123,
 				DueDate:        time.Now(),
 				ExpirationDate: time.Date(2022, 10, 10, 0, 0, 0, 0, time.Local),
-				PersonId:       1,
+				WalletId:       1,
 			}
 			err := dao.Create(rs, card)
 			assert.Nil(t, err)
@@ -50,7 +50,7 @@ func TestCardDAO(t *testing.T) {
 			card := &models.Card{
 				Id:       2,
 				Number:   "1234123412341298",
-				PersonId: 1,
+				WalletId: 1,
 			}
 			err := dao.Update(rs, card.Id, card)
 			assert.Nil(t, err)
@@ -63,7 +63,7 @@ func TestCardDAO(t *testing.T) {
 			card := &models.Card{
 				Id:       2,
 				Number:   "1234123412341297",
-				PersonId: 1,
+				WalletId: 1,
 			}
 			err := dao.Update(rs, 99999, card)
 			assert.NotNil(t, err)
