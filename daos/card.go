@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/allisonverdam/best-credit-card/models"
-	"github.com/allisonverdam/go-api-mcc/errors"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
