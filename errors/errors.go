@@ -27,6 +27,11 @@ func Unauthorized(err string) *APIError {
 	return NewAPIError(http.StatusUnauthorized, "UNAUTHORIZED", Params{"error": err})
 }
 
+// Forbidden cria um novo erro representando o erro "Forbidden" (HTTP 403)
+func Forbidden(err *APIError) *APIError {
+	return NewAPIError(http.StatusForbidden, "FORBIDDEN", Params{})
+}
+
 // InvalidData converte o erro "data validation" em um erro customizado (HTTP 400)
 func InvalidData(errs validation.Errors) *APIError {
 	result := []validationError{}
