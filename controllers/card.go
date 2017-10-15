@@ -13,7 +13,7 @@ type (
 	cardService interface {
 		Get(rs app.RequestScope, id int) (*models.Card, error)
 		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
-		GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error)
+		GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Card, error)
 		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Card) (*models.Card, error)
@@ -50,26 +50,7 @@ func (r *cardResource) getBestCards(c *routing.Context) error {
 		return err
 	}
 
-	var bestCards []models.Card
-	price, err := strconv.ParseFloat(*&order.Price, 64)
-	if err != nil {
-		return err
-	}
-
-	for _, card := range response {
-		if price <= 0 {
-			break
-		}
-		if price > card.Limit {
-			bestCards = append(bestCards, card)
-			price -= card.Limit
-		} else {
-			bestCards = append(bestCards, card)
-			break
-		}
-	}
-
-	return c.Write(bestCards)
+	return c.Write(response)
 }
 
 func (r *cardResource) get(c *routing.Context) error {

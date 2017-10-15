@@ -1,6 +1,8 @@
 package services
 
 import (
+	"strconv"
+
 	"github.com/allisonverdam/best-credit-card/app"
 	"github.com/allisonverdam/best-credit-card/models"
 )
@@ -10,7 +12,9 @@ type cardDAO interface {
 	// Get returns the card with the specified card ID.
 	Get(rs app.RequestScope, id int) (*models.Card, error)
 	// Get returns the card with the specified card ID.
-	GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error)
+	GetBestCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
+	// Get returns the card with the specified card ID.
+	GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 	// Count returns the number of cards.
 	Count(rs app.RequestScope) (int, error)
 	// Query returns the list of cards with the given offset and limit.
@@ -43,12 +47,38 @@ func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *mod
 	if err := order.Validate(); err != nil {
 		return nil, err
 	}
-	return s.dao.GetCardsByPersonId(rs, personId)
+
+	cards, err := s.dao.GetBestCardsByWalletId(rs, personId, order.WalletId)
+	if err != nil {
+		return nil, err
+	}
+
+	bestCards := []models.Card{}
+
+	price, err := strconv.ParseFloat(*&order.Price, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, card := range cards {
+		if price <= 0 {
+			break
+		}
+		if price > card.Limit {
+			bestCards = append(bestCards, card)
+			price -= card.Limit
+		} else {
+			bestCards = append(bestCards, card)
+			break
+		}
+	}
+
+	return bestCards, err
 }
 
 // Get returns the card with the specified the card ID.
-func (s *CardService) GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error) {
-	return s.dao.GetCardsByPersonId(rs, personId)
+func (s *CardService) GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
+	return s.dao.GetCardsByWalletId(rs, personId, walletId)
 }
 
 // Create creates a new card.
