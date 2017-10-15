@@ -37,7 +37,7 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 
 	//Verifica se a carteira pertence a pessoa que está autenticada
 	if *&wallet.PersonId != personId {
-		return nil, errors.NewAPIError(http.StatusUnauthorized, "this wallet does not belong to this user.", nil)
+		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"Message": "This wallet does not belong to this user."})
 	}
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
