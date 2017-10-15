@@ -15,6 +15,6 @@ type Person struct {
 func (p Person) Validate() error {
 	return validation.ValidateStruct(&p,
 		validation.Field(&p.Username, validation.Required, validation.Length(0, 20)),
-		validation.Field(&p.Password, validation.Required, validation.Length(8, 20)),
+		validation.Field(&p.Password, validation.Required, validation.Length(8, 255)),
 	)
 }
