@@ -1,6 +1,6 @@
 # DSN para conectar ao banco de dados
 # Lembrar de alterar para a variavel de ambiente "API_DSN" quando estiver em produção
-dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
+dsn: "postgres://postgres:postgres@127.0.0.1:5432/best_credit_card?sslmode=disable"
 
 # Configuração do JWT
 # Lembrar de alterar para as variaveis de ambiente quando estiver em produção

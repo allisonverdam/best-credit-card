@@ -20,7 +20,7 @@ install:
   - glide up -s -u
 
 before_script:
-  - psql -U postgres -c 'CREATE DATABASE go_restful;';
+  - psql -U postgres -c 'CREATE DATABASE best_credit_card;';
 
 script:
   - make test
