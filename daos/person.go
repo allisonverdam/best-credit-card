@@ -4,6 +4,7 @@ import (
 	"github.com/allisonverdam/best-credit-card/app"
 	"github.com/allisonverdam/best-credit-card/models"
 	"github.com/go-ozzo/ozzo-dbx"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // PersonDAO faz a persistencia dos dados no bd
@@ -32,6 +33,11 @@ func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) 
 // The Person.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *PersonDAO) Create(rs app.RequestScope, person *models.Person) error {
 	person.Id = 0
+
+	newPassword, _ := bcrypt.GenerateFromPassword([]byte(person.Password), 14)
+
+	person.Password = string(newPassword)
+
 	return rs.Tx().Model(person).Insert()
 }
 

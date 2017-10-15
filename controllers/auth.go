@@ -10,6 +10,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/auth"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Credential struct {
@@ -58,8 +59,13 @@ func authenticate(c Credential, personDao *daos.PersonDAO, r *routing.Context) *
 		return nil
 	}
 
-	if c.Username == person.Username && c.Password == person.Password {
+	if c.Username == person.Username && CheckPasswordHash(c.Password, person.Password) {
 		return person
 	}
 	return nil
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
