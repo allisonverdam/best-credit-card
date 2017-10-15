@@ -16,14 +16,14 @@ func NewPersonDAO() *PersonDAO {
 
 // Get reads the person with the specified ID from the database.
 func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
-	var person models.Person
+	person := models.Person{}
 	err := rs.Tx().Select().Model(id, &person)
 	return &person, err
 }
 
 // Get reads the person with the specified ID from the database.
 func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error) {
-	var person models.Person
+	person := models.Person{}
 	err := rs.Tx().Select().Where(dbx.Like("username", username)).One(&person)
 	return &person, err
 }
