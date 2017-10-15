@@ -13,7 +13,7 @@ type Card struct {
 	ExpirationDate time.Time `json:"expiration_date" db:"cc_expiration_date"`
 	CVV            int       `json:"cvv" db:"cc_cvv"`
 	Limit          float64   `json:"limit" db:"cc_limit"`
-	PersonId       int       `json:"person_id" db:"person_id"`
+	WalletId       int       `json:"wallet_id" db:"wallet_id"`
 }
 
 func (m Card) Validate() error {
