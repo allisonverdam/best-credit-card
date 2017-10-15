@@ -1,8 +1,11 @@
 package daos
 
 import (
+	"net/http"
+
 	"github.com/allisonverdam/best-credit-card/app"
 	"github.com/allisonverdam/best-credit-card/models"
+	"github.com/allisonverdam/go-api-mcc/errors"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
@@ -16,15 +19,43 @@ func NewCardDAO() *CardDAO {
 
 // Get retorna um cartão com id específico.
 func (dao *CardDAO) Get(rs app.RequestScope, id int) (*models.Card, error) {
-	var card models.Card
+	card := models.Card{}
 	err := rs.Tx().Select().Model(id, &card)
 	return &card, err
 }
 
-// GetCardsByPersonId retorna uma lista de cartões de uma pessoa com id pespecífico.
-func (dao *CardDAO) GetCardsByPersonId(rs app.RequestScope, personId int) ([]models.Card, error) {
+// GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
+func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
 	cards := []models.Card{}
-	err := rs.Tx().Select().Where(dbx.HashExp{"person_id": personId}).OrderBy("cc_limit").All(&cards)
+	wallet := models.Wallet{}
+
+	//verifica se a carteira existe
+	errWallet := rs.Tx().Select().Where(dbx.HashExp{"id": walletId}).One(&wallet)
+	if errWallet != nil {
+		return nil, errWallet
+	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	if *&wallet.PersonId != personId {
+		return nil, errors.NewAPIError(http.StatusUnauthorized, "this wallet does not belong to this user.", nil)
+	}
+
+	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
+	err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC").All(&cards)
+	return cards, err
+}
+
+// GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
+func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
+	cards := []models.Card{}
+	person := models.Person{}
+	errPerson := rs.Tx().Select().Where(dbx.HashExp{"id": personId}).One(&person)
+
+	if errPerson != nil {
+		return nil, errPerson
+	}
+
+	err := rs.Tx().Select().Where(dbx.HashExp{"person_id": &person.Id}).All(&cards)
 	return cards, err
 }
 
