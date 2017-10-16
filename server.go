@@ -45,9 +45,9 @@ func main() {
 	http.Handle("/", buildRouter(logger, db))
 
 	// start the server
-	address := map[bool] string { true: os.Getenv("PORT"), false: strconv.Itoa(app.Config.ServerPort) }[ os.Getenv("PORT") != "" ]
+	address := map[bool]string{true: os.Getenv("PORT"), false: strconv.Itoa(app.Config.ServerPort)}[os.Getenv("PORT") != ""]
 	logger.Infof("Server %v is started at %v\n", app.Version, address)
-	panic(http.ListenAndServe(fmt.Sprintf(":%s",address), nil))
+	panic(http.ListenAndServe(fmt.Sprintf(":%s", address), nil))
 }
 
 func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
@@ -73,8 +73,7 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	rg.Post("/auth", controllers.Auth(app.Config.JWTSigningKey))
 	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
-		SigningMethod: app.Config.JWTSigningMethod,
-		TokenHandler:  controllers.JWTHandler,
+		TokenHandler: controllers.JWTHandler,
 	}))
 
 	// Fazendo o load dos controllers
