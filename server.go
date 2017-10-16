@@ -76,6 +76,12 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 		TokenHandler: controllers.JWTHandler,
 	}))
 
+	var key = app.Config.JWTVerificationKey
+	var sign = app.Config.JWTSigningKey
+
+	println(key)
+	println(sign)
+
 	// Fazendo o load dos controllers
 	cardDAO := daos.NewCardDAO()
 	uerDAO := daos.NewPersonDAO()
