@@ -59,6 +59,14 @@ func authenticate(c Credential, personDao *daos.PersonDAO, r *routing.Context) *
 		return nil
 	}
 
+	println("person.Username", person.Username)
+	println("c.Username", c.Username)
+
+	println("c.Password", c.Password)
+	println("person.Password", person.Password)
+
+	println("CheckPasswordHash(c.Password, person.Password)", CheckPasswordHash(c.Password, person.Password))
+
 	if c.Username == person.Username && CheckPasswordHash(c.Password, person.Password) {
 		return person
 	}
