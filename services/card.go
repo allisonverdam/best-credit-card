@@ -60,7 +60,17 @@ func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *mod
 		return nil, err
 	}
 
-	for i, card := range cards {
+	for _, card := range cards {
+		// if card.DueDate == cards[i+1].DueDate {
+		// 	if card.Limit < cards[i+1].Limit {
+		// 		if price > card.Limit {
+		// 			bestCards = append(bestCards, card)
+		// 			price -= card.Limit
+		// 		} else {
+		// 			bestCards = append(bestCards, card)
+		// 			break
+		// 		}
+		// 	}
 		if price <= 0 {
 			break
 		}
