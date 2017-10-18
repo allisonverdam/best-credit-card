@@ -55,7 +55,7 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	router.To("GET,HEAD", "/ping", func(c *routing.Context) error {
 		c.Abort() // skip all other middlewares/handlers
-		return c.Write("OK " + app.Version)
+		return c.Write("pong!")
 	})
 
 	router.Use(
@@ -71,16 +71,21 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	rg := router.Group("/v1")
 
-	rg.Post("/auth", controllers.Auth(app.Config.JWTSigningKey))
+	//Fazendo as requisições desse group passarem pelo middleware de auth
 	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
-		TokenHandler: controllers.JWTHandler,
+		TokenHandler: services.JWTHandler,
 	}))
 
-	// Fazendo o load dos controllers
+	//Instanciando DAOs
 	cardDAO := daos.NewCardDAO()
-	uerDAO := daos.NewPersonDAO()
+	userDAO := daos.NewPersonDAO()
+
+	//Fazendo o load dos resources
 	controllers.ServeCardResource(rg, services.NewCardService(cardDAO))
-	controllers.ServePersonResource(router.Group("/v1"), services.NewPersonService(uerDAO))
+	controllers.ServePersonResource(rg, services.NewPersonService(userDAO))
+
+	//Ignorar o middleware de auth
+	controllers.ServeAuthResource(router.Group("/v1"), services.NewAuthService(userDAO))
 
 	return router
 }

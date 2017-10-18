@@ -1,79 +1,58 @@
 package controllers
 
 import (
-	"time"
-
 	"github.com/allisonverdam/best-credit-card/app"
-	"github.com/allisonverdam/best-credit-card/daos"
 	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/allisonverdam/best-credit-card/models"
-	jwt "github.com/dgrijalva/jwt-go"
 	routing "github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/auth"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type Credential struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func Auth(signingKey string) routing.Handler {
-	return func(c *routing.Context) error {
-		var daoPerson = daos.NewPersonDAO()
-		var credential Credential
-		if err := c.Read(&credential); err != nil {
-			return errors.Unauthorized(err.Error())
-		}
-
-		identity := authenticate(credential, daoPerson, c)
-		if identity == nil {
-			return errors.Unauthorized("invalid credential")
-		}
-
-		token, err := auth.NewJWT(jwt.MapClaims{
-			"id":   identity.Id,
-			"name": identity.Name,
-			"exp":  time.Now().Add(time.Hour * 72).Unix(),
-		}, signingKey)
-		if err != nil {
-			return errors.Unauthorized(err.Error())
-		}
-
-		return c.Write(map[string]string{
-			"token": token,
-		})
+type (
+	// authService especifica a interface que é utilizada pelo cardResource
+	authService interface {
+		Register(rs app.RequestScope, model *models.Person) (*models.Person, error)
+		Login(c *routing.Context, credential models.Credential, signingKey string) (string, error)
 	}
+
+	// authResource define os handlers para as chamadas do controller.
+	authResource struct {
+		service authService
+	}
+)
+
+// ServeAuthResource define as rotas.
+func ServeAuthResource(rg *routing.RouteGroup, service authService) {
+	r := &authResource{service}
+	rg.Post("/register", r.Register)
+	rg.Post("/login", r.Login)
 }
 
-func JWTHandler(c *routing.Context, j *jwt.Token) error {
-	userID := j.Claims.(jwt.MapClaims)["id"].(float64)
-	app.GetRequestScope(c).SetUserID(int(userID))
-	return nil
-}
-
-func authenticate(c Credential, personDao *daos.PersonDAO, r *routing.Context) *models.Person {
-	rs := app.GetRequestScope(r)
-	person, err := personDao.GetPersonByUserName(rs, c.Username)
+func (r *authResource) Register(c *routing.Context) error {
+	var model models.Person
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+	response, err := r.service.Register(app.GetRequestScope(c), &model)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	println("person.Username", person.Username)
-	println("c.Username", c.Username)
-
-	println("c.Password", c.Password)
-	println("person.Password", person.Password)
-
-	println("CheckPasswordHash(c.Password, person.Password)", CheckPasswordHash(c.Password, person.Password))
-
-	if c.Username == person.Username && CheckPasswordHash(c.Password, person.Password) {
-		return person
-	}
-	return nil
+	return c.Write(response)
 }
 
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+func (r *authResource) Login(c *routing.Context) error {
+	var credential models.Credential
+	if err := c.Read(&credential); err != nil {
+		return errors.Unauthorized(err.Error())
+	}
+
+	token, err := r.service.Login(c, credential, app.Config.JWTSigningKey)
+
+	if err != nil {
+		return errors.Unauthorized(err.Error())
+	}
+
+	return c.Write(map[string]string{
+		"token": token,
+	})
 }
