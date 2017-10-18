@@ -60,7 +60,7 @@ func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *mod
 		return nil, err
 	}
 
-	for _, card := range cards {
+	for i, card := range cards {
 		if price <= 0 {
 			break
 		}
