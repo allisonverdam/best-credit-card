@@ -26,10 +26,11 @@ CREATE TABLE wallet
 CREATE TABLE card
 (
     id SERIAL PRIMARY KEY,
-    cc_number VARCHAR(16),
-    cc_due_date DATE,
-    cc_expiration_date DATE,
-    cc_cvv INTEGER,
+    cc_number VARCHAR(16) NOT NULL,
+    cc_due_date INTEGER NOT NULL,
+    cc_expiration_month INTEGER NOT NULL,
+    cc_expiration_year INTEGER NOT NULL,
+    cc_cvv INTEGER NOT NULL,
     cc_limit DECIMAL NOT NULL,
     wallet_id INTEGER  NOT NULL,
     FOREIGN KEY (wallet_id) REFERENCES wallet (id) ON DELETE CASCADE
@@ -43,13 +44,13 @@ INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 1);
 INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 2);
 INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 3);
 
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341230', '2016/01/12', '2017/10/12', 123, '300', 1);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341231', '2016/01/12', '2017/10/12', 123, '400', 1);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341232', '2016/03/10', '2017/10/12', 123, '500', 1);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341233', '2016/04/09', '2017/10/12', 123, '600', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341234', '2016/05/08', '2017/10/12', 123, '300', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341235', '2016/01/07', '2017/10/12', 123, '400', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341236', '2016/02/06', '2017/10/12', 123, '500', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341237', '2016/03/05', '2017/10/12', 123, '600', 3);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341238', '2016/04/04', '2017/10/12', 123, '700', 3);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_date, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341239', '2016/05/03', '2017/10/12', 123, '800', 3);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341230', 10, 06, 17, 123, 300, 1);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341231', 10, 06, 17, 123, 400, 1);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341232', 11, 08, 16, 123, 500, 1);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341233', 12, 10, 14, 123, 600, 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341234', 12, 01, 14, 123, 300, 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341235', 13, 02, 15, 123, 400, 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341236', 14, 03, 15, 123, 500, 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341237', 15, 04, 16, 123, 600, 3);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341238', 16, 05, 17, 123, 700, 3);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_limit, wallet_id) VALUES ('1234123412341239', 17, 06, 16, 123, 800, 3);

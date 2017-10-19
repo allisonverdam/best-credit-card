@@ -2,7 +2,6 @@ package daos
 
 import (
 	"testing"
-	"time"
 
 	"github.com/allisonverdam/best-credit-card/app"
 	"github.com/allisonverdam/best-credit-card/models"
@@ -29,13 +28,14 @@ func TestCardDAO(t *testing.T) {
 		// Create
 		testDBCall(db, func(rs app.RequestScope) {
 			card := &models.Card{
-				Id:             1000,
-				Number:         "1234123412341299",
-				Limit:          100,
-				CVV:            123,
-				DueDate:        time.Now(),
-				ExpirationDate: time.Date(2022, 10, 10, 0, 0, 0, 0, time.Local),
-				WalletId:       1,
+				Id:              1000,
+				Number:          "1234123412341299",
+				Limit:           100,
+				CVV:             123,
+				DueDate:         22,
+				ExpirationMonth: 01,
+				ExpirationYear:  17,
+				WalletId:        1,
 			}
 			err := dao.Create(rs, card)
 			assert.Nil(t, err)
