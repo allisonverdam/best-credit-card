@@ -11,7 +11,8 @@ type Card struct {
 	ExpirationMonth int     `json:"expiration_month" db:"cc_expiration_month"`
 	ExpirationYear  int     `json:"expiration_year" db:"cc_expiration_year"`
 	CVV             int     `json:"cvv" db:"cc_cvv"`
-	Limit           float64 `json:"limit" db:"cc_limit"`
+	RealLimit       float64 `json:"real_limit" db:"cc_real_limit"`
+	CurrentLimit    float64 `json:"current_limit" db:"cc_current_limit"`
 	WalletId        int     `json:"wallet_id" db:"wallet_id"`
 }
 
