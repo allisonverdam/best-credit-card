@@ -30,7 +30,8 @@ func TestCardDAO(t *testing.T) {
 			card := &models.Card{
 				Id:              1000,
 				Number:          "1234123412341299",
-				Limit:           100,
+				RealLimit:       100,
+				CurrentLimit:    50,
 				CVV:             123,
 				DueDate:         22,
 				ExpirationMonth: 01,
