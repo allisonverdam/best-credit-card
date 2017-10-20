@@ -1,9 +1,12 @@
 package services
 
 import (
-	"strconv"
+	"net/http"
+
+	"github.com/allisonverdam/best-credit-card/daos"
 
 	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/allisonverdam/best-credit-card/models"
 )
 
@@ -17,8 +20,8 @@ type cardDAO interface {
 	GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 	// Count returns the number of cards.
 	Count(rs app.RequestScope) (int, error)
-	// Query returns the list of cards with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]models.Card, error)
+	// Query returns the list of cards with the given offset and RealLimit.
+	Query(rs app.RequestScope, offset, RealLimit int) ([]models.Card, error)
 	// Create saves a new card in the storage.
 	Create(rs app.RequestScope, card *models.Card) error
 	// Update updates the card with given ID in the storage.
@@ -43,6 +46,50 @@ func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
 }
 
 // Get returns the card with the specified the card ID.
+func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error) {
+	if err := order.ValidateCardIdAndPrice(); err != nil {
+		return nil, err
+	}
+
+	card, err := s.dao.Get(rs, order.CardId)
+	if err != nil {
+		return nil, err
+	}
+
+	walletDao := daos.NewWalletDAO()
+	wallet, err := NewWalletService(walletDao).Get(rs, card.WalletId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	personDao := daos.NewPersonDAO()
+	person, err := NewPersonService(personDao).Get(rs, wallet.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	if rs.UserID() != person.Id {
+		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This card does not belong to this user."})
+	}
+
+	if (card.CurrentLimit + order.Price) > card.RealLimit {
+		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit."})
+
+	}
+
+	card.CurrentLimit += order.Price
+
+	if err := s.dao.Update(rs, card.Id, card); err != nil {
+		return nil, err
+	}
+
+	return card, nil
+}
+
+// Get returns the card with the specified the card ID.
 func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error) {
 	if err := order.Validate(); err != nil {
 		return nil, err
@@ -55,28 +102,16 @@ func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *mod
 
 	bestCards := []models.Card{}
 
-	price, err := strconv.ParseFloat(*&order.Price, 64)
-	if err != nil {
-		return nil, err
-	}
+	price := *&order.Price
 
 	for _, card := range cards {
-		// if card.DueDate == cards[i+1].DueDate {
-		// 	if card.Limit < cards[i+1].Limit {
-		// 		if price > card.Limit {
-		// 			bestCards = append(bestCards, card)
-		// 			price -= card.Limit
-		// 		} else {
-		// 			bestCards = append(bestCards, card)
-		// 			break
-		// 		}
-		// 	}
 		if price <= 0 {
 			break
 		}
-		if price > card.Limit {
+
+		if price > card.RealLimit {
 			bestCards = append(bestCards, card)
-			price -= card.Limit
+			price -= card.RealLimit
 		} else {
 			bestCards = append(bestCards, card)
 			break
@@ -128,7 +163,7 @@ func (s *CardService) Count(rs app.RequestScope) (int, error) {
 	return s.dao.Count(rs)
 }
 
-// Query returns the cards with the specified offset and limit.
-func (s *CardService) Query(rs app.RequestScope, offset, limit int) ([]models.Card, error) {
-	return s.dao.Query(rs, offset, limit)
+// Query returns the cards with the specified offset and RealLimit.
+func (s *CardService) Query(rs app.RequestScope, offset, RealLimit int) ([]models.Card, error) {
+	return s.dao.Query(rs, offset, RealLimit)
 }

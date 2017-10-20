@@ -14,6 +14,7 @@ type (
 		Get(rs app.RequestScope, id int) (*models.Card, error)
 		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
 		GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
+		PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Card, error)
 		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Card) (*models.Card, error)
@@ -33,7 +34,8 @@ func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	rg.Get("/cards/<id>", r.get)
 	rg.Get("/cards", r.query)
 	rg.Post("/cards", r.create)
-	rg.Post("/bestCard", r.getBestCards)
+	rg.Post("/cards/pay", r.payCreditCard)
+	rg.Post("/cards/bestCard", r.getBestCards)
 	rg.Put("/cards/<id>", r.update)
 	rg.Delete("/cards/<id>", r.delete)
 }
@@ -46,6 +48,21 @@ func (r *cardResource) getBestCards(c *routing.Context) error {
 	}
 
 	response, err := r.service.GetBestCards(app.GetRequestScope(c), app.GetRequestScope(c).UserID(), &order)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
+}
+
+// payCreditCard paga um cartao para liberar credito
+func (r *cardResource) payCreditCard(c *routing.Context) error {
+	var order models.Order
+	if err := c.Read(&order); err != nil {
+		return err
+	}
+
+	response, err := r.service.PayCreditCard(app.GetRequestScope(c), *&order)
 	if err != nil {
 		return err
 	}
