@@ -41,7 +41,8 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 	}
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
-	err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC").All(&cards)
+	//caso tenha cartões com o cc_due_date igual retorna o com menor limite primeiro
+	err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC", "cc_limit ASC").All(&cards)
 	return cards, err
 }
 
