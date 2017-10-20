@@ -13,4 +13,7 @@ INVALID_DATA:
   message: "There is some problem with the data you submitted. See details for more information."
 
 FORBIDDEN:
-  message: "{Message}"
+  message: "{message}"
+
+ERROR:
+  message: "{message}"
