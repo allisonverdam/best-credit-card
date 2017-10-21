@@ -7,8 +7,8 @@ CREATE TABLE person
 (
     id SERIAL PRIMARY KEY,
     name VARCHAR(120),
-    username VARCHAR(120),
-    email VARCHAR(120),
+    username VARCHAR(120) UNIQUE,
+    email VARCHAR(120) UNIQUE,
     password VARCHAR(120)
 );
 
@@ -26,7 +26,7 @@ CREATE TABLE wallet
 CREATE TABLE card
 (
     id SERIAL PRIMARY KEY,
-    cc_number VARCHAR(16) NOT NULL,
+    cc_number VARCHAR(16) NOT NULL UNIQUE,
     cc_due_date INTEGER NOT NULL,
     cc_expiration_month INTEGER NOT NULL,
     cc_expiration_year INTEGER NOT NULL,
