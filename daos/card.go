@@ -49,14 +49,25 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
 func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
 	cards := []models.Card{}
+	wallet := models.Wallet{}
 	person := models.Person{}
-	errPerson := rs.Tx().Select().Where(dbx.HashExp{"id": personId}).One(&person)
 
+	errPerson := rs.Tx().Select().Where(dbx.HashExp{"id": personId}).One(&person)
 	if errPerson != nil {
 		return nil, errPerson
 	}
 
-	err := rs.Tx().Select().Where(dbx.HashExp{"person_id": &person.Id}).All(&cards)
+	errWallet := rs.Tx().Select().Where(dbx.HashExp{"id": &person.Id}).One(&wallet)
+	if errWallet != nil {
+		return nil, errWallet
+	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	if *&wallet.PersonId != personId {
+		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
+	}
+
+	err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
 	return cards, err
 }
 

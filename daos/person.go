@@ -19,21 +19,20 @@ func NewPersonDAO() *PersonDAO {
 func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
 	person := models.Person{}
 	err := rs.Tx().Select().Model(id, &person)
+
+	person.Password = ""
 	return &person, err
 }
 
 // Get reads the person with the specified ID from the database.
 func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error) {
 	person := models.Person{}
-	err := rs.Tx().Select().Where(dbx.Like("username", username)).One(&person)
+	err := rs.Tx().Select().Where(dbx.HashExp{"username": username}).One(&person)
 	return &person, err
 }
 
 // Create saves a new person record in the database.
-// The Person.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *PersonDAO) Create(rs app.RequestScope, person *models.Person) error {
-	person.Id = 0
-
 	newPassword, _ := bcrypt.GenerateFromPassword([]byte(person.Password), 14)
 
 	person.Password = string(newPassword)

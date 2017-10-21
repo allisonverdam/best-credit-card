@@ -32,7 +32,7 @@ type (
 func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	r := &cardResource{service}
 	rg.Get("/cards/<id>", r.get)
-	rg.Get("/cards", r.query)
+	rg.Get("/cards/wallet/<id>", r.cardsWallet)
 	rg.Post("/cards", r.create)
 	rg.Post("/cards/pay", r.payCreditCard)
 	rg.Post("/cards/bestCard", r.getBestCards)
@@ -82,6 +82,22 @@ func (r *cardResource) get(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+func (r *cardResource) cardsWallet(c *routing.Context) error {
+	wallet_id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	rs := app.GetRequestScope(c)
+
+	cards, err := r.service.GetCardsByWalletId(rs, rs.UserID(), wallet_id)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(cards)
 }
 
 func (r *cardResource) query(c *routing.Context) error {

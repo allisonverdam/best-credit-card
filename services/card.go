@@ -42,7 +42,20 @@ func NewCardService(dao cardDAO) *CardService {
 
 // Get returns the card with the specified the card ID.
 func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
-	return s.dao.Get(rs, id)
+	card, err := s.dao.Get(rs, id)
+
+	wallet, walletErr := GetWalletByCard(rs, card)
+	if walletErr != nil {
+		return nil, walletErr
+	}
+
+	//Verifica se o cartão pertence a pessoa que está autenticada
+	err = VerifyPersonOwner(rs, wallet.PersonId, "card")
+	if err != nil {
+		return nil, err
+	}
+
+	return card, err
 }
 
 // Get returns the card with the specified the card ID.
@@ -56,23 +69,20 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 		return nil, err
 	}
 
-	walletDao := daos.NewWalletDAO()
-	wallet, err := NewWalletService(walletDao).Get(rs, card.WalletId)
-
+	wallet, err := GetWalletByCard(rs, card)
 	if err != nil {
 		return nil, err
 	}
 
-	personDao := daos.NewPersonDAO()
-	person, err := NewPersonService(personDao).Get(rs, wallet.Id)
-
+	person, err := GetPersonByWallet(rs, wallet)
 	if err != nil {
 		return nil, err
 	}
 
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	if rs.UserID() != person.Id {
-		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This card does not belong to this user."})
+	//Verifica se o cartão pertence a pessoa que está autenticada
+	err = VerifyPersonOwner(rs, person.Id, "card")
+	if err != nil {
+		return nil, err
 	}
 
 	if (card.CurrentLimit + order.Price) > card.RealLimit {
@@ -127,22 +137,31 @@ func (s *CardService) GetCardsByWalletId(rs app.RequestScope, personId int, wall
 }
 
 // Create creates a new card.
-func (s *CardService) Create(rs app.RequestScope, model *models.Card) (*models.Card, error) {
-	if err := model.Validate(); err != nil {
+func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Card, error) {
+	if err := card.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Create(rs, model); err != nil {
+
+	wallet, err := GetWalletByCard(rs, card)
+	if err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, model.Id)
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+
+	if err := s.dao.Create(rs, card); err != nil {
+		return nil, err
+	}
+	return s.dao.Get(rs, card.Id)
 }
 
 // Update updates the card with the specified ID.
-func (s *CardService) Update(rs app.RequestScope, id int, model *models.Card) (*models.Card, error) {
-	if err := model.Validate(); err != nil {
+func (s *CardService) Update(rs app.RequestScope, id int, card *models.Card) (*models.Card, error) {
+	if err := card.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Update(rs, id, model); err != nil {
+	if err := s.dao.Update(rs, id, card); err != nil {
 		return nil, err
 	}
 	return s.dao.Get(rs, id)
@@ -166,4 +185,28 @@ func (s *CardService) Count(rs app.RequestScope) (int, error) {
 // Query returns the cards with the specified offset and RealLimit.
 func (s *CardService) Query(rs app.RequestScope, offset, RealLimit int) ([]models.Card, error) {
 	return s.dao.Query(rs, offset, RealLimit)
+}
+
+//Retorna a carteira que o cartão faz parte
+func GetWalletByCard(rs app.RequestScope, card *models.Card) (*models.Wallet, error) {
+	walletDao := daos.NewWalletDAO()
+	wallet, err := NewWalletService(walletDao).Get(rs, card.WalletId)
+
+	return wallet, err
+}
+
+//Retorna a pessoa dona do cartão
+func GetPersonByWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Person, error) {
+	personDao := daos.NewPersonDAO()
+	person, err := NewPersonService(personDao).Get(rs, wallet.Id)
+
+	return person, err
+}
+
+func VerifyPersonOwner(rs app.RequestScope, id int, resource string) error {
+
+	if rs.UserID() != id {
+		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to this user."})
+	}
+	return nil
 }
