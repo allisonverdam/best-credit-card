@@ -18,10 +18,6 @@ type cardDAO interface {
 	GetBestCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 	// Get returns the card with the specified card ID.
 	GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
-	// Count returns the number of cards.
-	Count(rs app.RequestScope) (int, error)
-	// Query returns the list of cards with the given offset and RealLimit.
-	Query(rs app.RequestScope, offset, RealLimit int) ([]models.Card, error)
 	// Create saves a new card in the storage.
 	Create(rs app.RequestScope, card *models.Card) error
 	// Update updates the card with given ID in the storage.
@@ -138,10 +134,6 @@ func (s *CardService) GetCardsByWalletId(rs app.RequestScope, personId int, wall
 
 // Create creates a new card.
 func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Card, error) {
-	if err := card.Validate(); err != nil {
-		return nil, err
-	}
-
 	wallet, err := GetWalletByCard(rs, card)
 	if err != nil {
 		return nil, err
@@ -158,9 +150,6 @@ func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Ca
 
 // Update updates the card with the specified ID.
 func (s *CardService) Update(rs app.RequestScope, id int, card *models.Card) (*models.Card, error) {
-	if err := card.Validate(); err != nil {
-		return nil, err
-	}
 	if err := s.dao.Update(rs, id, card); err != nil {
 		return nil, err
 	}
@@ -175,16 +164,6 @@ func (s *CardService) Delete(rs app.RequestScope, id int) (*models.Card, error) 
 	}
 	err = s.dao.Delete(rs, id)
 	return card, err
-}
-
-// Count returns the number of cards.
-func (s *CardService) Count(rs app.RequestScope) (int, error) {
-	return s.dao.Count(rs)
-}
-
-// Query returns the cards with the specified offset and RealLimit.
-func (s *CardService) Query(rs app.RequestScope, offset, RealLimit int) ([]models.Card, error) {
-	return s.dao.Query(rs, offset, RealLimit)
 }
 
 //Retorna a carteira que o cartão faz parte
@@ -204,7 +183,6 @@ func GetPersonByWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Pers
 }
 
 func VerifyPersonOwner(rs app.RequestScope, id int, resource string) error {
-
 	if rs.UserID() != id {
 		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to this user."})
 	}
