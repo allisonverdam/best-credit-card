@@ -14,5 +14,7 @@ type Wallet struct {
 func (p Wallet) Validate() error {
 	return validation.ValidateStruct(&p,
 		validation.Field(&p.PersonId, validation.Required),
+		validation.Field(&p.RealLimit, validation.Required),
+		validation.Field(&p.MaximumLimit, validation.Required),
 	)
 }

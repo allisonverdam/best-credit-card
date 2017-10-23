@@ -19,5 +19,12 @@ type Card struct {
 func (m Card) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.Number, validation.Required, validation.Length(16, 16)),
+		validation.Field(&m.DueDate, validation.Required),
+		validation.Field(&m.ExpirationMonth, validation.Required),
+		validation.Field(&m.ExpirationYear, validation.Required),
+		validation.Field(&m.CVV, validation.Required),
+		validation.Field(&m.RealLimit, validation.Required),
+		validation.Field(&m.CurrentLimit, validation.Required),
+		validation.Field(&m.WalletId, validation.Required),
 	)
 }
