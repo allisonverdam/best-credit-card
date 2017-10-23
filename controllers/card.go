@@ -15,8 +15,6 @@ type (
 		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
 		GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 		PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error)
-		Query(rs app.RequestScope, offset, limit int) ([]models.Card, error)
-		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Card) (*models.Card, error)
 		Update(rs app.RequestScope, id int, model *models.Card) (*models.Card, error)
 		Delete(rs app.RequestScope, id int) (*models.Card, error)
@@ -98,21 +96,6 @@ func (r *cardResource) cardsWallet(c *routing.Context) error {
 	}
 
 	return c.Write(cards)
-}
-
-func (r *cardResource) query(c *routing.Context) error {
-	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
-	if err != nil {
-		return err
-	}
-	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
-	if err != nil {
-		return err
-	}
-	paginatedList.Items = items
-	return c.Write(paginatedList)
 }
 
 func (r *cardResource) create(c *routing.Context) error {
