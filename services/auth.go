@@ -30,7 +30,7 @@ func (s *AuthService) Register(rs app.RequestScope, model *models.Person) (*mode
 	if err := s.dao.Create(rs, model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, model.Id)
+	return s.dao.GetWithoutPassword(rs, model.Id)
 }
 
 func (s *AuthService) Login(c *routing.Context, credential models.Credential, signingKey string) (string, error) {
