@@ -42,33 +42,28 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
 	//caso tenha cartões com o cc_due_date igual retorna o com menor limite primeiro
-	err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC", "cc_current_limit ASC").All(&cards)
-	return cards, err
+	rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC", "cc_current_limit ASC").All(&cards)
+
+	return cards, nil
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
 func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
 	cards := []models.Card{}
 	wallet := models.Wallet{}
-	person := models.Person{}
 
-	errPerson := rs.Tx().Select().Where(dbx.HashExp{"id": personId}).One(&person)
-	if errPerson != nil {
-		return nil, errPerson
-	}
-
-	errWallet := rs.Tx().Select().Where(dbx.HashExp{"id": &person.Id}).One(&wallet)
+	errWallet := rs.Tx().Select().Where(dbx.HashExp{"id": walletId}).One(&wallet)
 	if errWallet != nil {
 		return nil, errWallet
 	}
 
-	//Verifica se a carteira pertence a pessoa que está autenticada
 	if *&wallet.PersonId != personId {
 		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
 	}
 
-	err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
-	return cards, err
+	rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
+
+	return cards, nil
 }
 
 // Create salva um novo cartão.
@@ -93,18 +88,4 @@ func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {
 		return err
 	}
 	return rs.Tx().Model(card).Delete()
-}
-
-// Count retorna a quantidade de cartões.
-func (dao *CardDAO) Count(rs app.RequestScope) (int, error) {
-	var count int
-	err := rs.Tx().Select("COUNT(*)").From("card").Row(&count)
-	return count, err
-}
-
-//Query retorna os cartões no intervalo do offset e o limit.
-func (dao *CardDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Card, error) {
-	cards := []models.Card{}
-	err := rs.Tx().Select().OrderBy("id").Offset(int64(offset)).Limit(int64(limit)).All(&cards)
-	return cards, err
 }
