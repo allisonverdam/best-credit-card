@@ -44,6 +44,7 @@ INSERT INTO person (name, username, email, password) VALUES ('Beatriz B.','bia',
 INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 1);
 INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 2);
 INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 3);
+INSERT INTO wallet (real_limit, maximum_limit, person_id) VALUES (0, 0, 1);
 
 INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_current_limit, wallet_id) VALUES ('1234123412341230', 10, 06, 17, 123, 300, 180, 1);
 INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_current_limit, wallet_id) VALUES ('1234123412341231', 10, 06, 17, 123, 400, 200, 1);
