@@ -9,6 +9,8 @@ import (
 type personDAO interface {
 	// Get returns the person with the specified person ID.
 	Get(rs app.RequestScope, id int) (*models.Person, error)
+	// GetWithoutPassword returns the person with the specified person ID whithout password.
+	GetWithoutPassword(rs app.RequestScope, id int) (*models.Person, error)
 	// Update updates the person with given ID in the storage.
 	Update(rs app.RequestScope, id int, person *models.Person) error
 	// Create saves a new person in the storage.
@@ -27,35 +29,26 @@ func NewPersonService(dao personDAO) *PersonService {
 
 // Get returns the person with the specified the person ID.
 func (s *PersonService) Get(rs app.RequestScope, id int) (*models.Person, error) {
-	return s.dao.Get(rs, id)
-}
-
-// Update updates the person with the specified ID.
-func (s *PersonService) Update(rs app.RequestScope, id int, person *models.Person) (*models.Person, error) {
-	if err := person.ValidateOnUpdate(); err != nil {
-		return nil, err
-	}
-
-	oldPerson, err := s.dao.Get(rs, id)
+	person, err := s.dao.GetWithoutPassword(rs, id)
 	if err != nil {
 		return nil, err
 	}
 
-	person.Password = oldPerson.Password
+	return person, nil
+}
 
+// Update updates the person with the specified ID.
+func (s *PersonService) Update(rs app.RequestScope, id int, person *models.Person) (*models.Person, error) {
 	if err := s.dao.Update(rs, id, person); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, id)
+	return s.dao.GetWithoutPassword(rs, id)
 }
 
 // Create creates a new person.
 func (s *PersonService) Create(rs app.RequestScope, person *models.Person) (*models.Person, error) {
-	if err := person.Validate(); err != nil {
-		return nil, err
-	}
 	if err := s.dao.Create(rs, person); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, person.Id)
+	return s.dao.GetWithoutPassword(rs, person.Id)
 }

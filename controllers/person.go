@@ -38,16 +38,13 @@ func (r *personResource) get(c *routing.Context) error {
 func (r *personResource) update(c *routing.Context) error {
 	rs := app.GetRequestScope(c)
 
-	person, err := r.service.Get(rs, rs.UserID())
-	if err != nil {
+	person := models.Person{}
+
+	if err := c.Read(&person); err != nil {
 		return err
 	}
 
-	if err := c.Read(person); err != nil {
-		return err
-	}
-
-	response, err := r.service.Update(rs, rs.UserID(), person)
+	response, err := r.service.Update(rs, rs.UserID(), &person)
 	if err != nil {
 		return err
 	}

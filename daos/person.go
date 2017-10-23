@@ -20,7 +20,16 @@ func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
 	person := models.Person{}
 	err := rs.Tx().Select().Model(id, &person)
 
+	return &person, err
+}
+
+// Get reads the person with the specified ID from the database.
+func (dao *PersonDAO) GetWithoutPassword(rs app.RequestScope, id int) (*models.Person, error) {
+	person := models.Person{}
+	err := rs.Tx().Select().Model(id, &person)
+
 	person.Password = ""
+
 	return &person, err
 }
 
@@ -28,24 +37,42 @@ func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
 func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) (*models.Person, error) {
 	person := models.Person{}
 	err := rs.Tx().Select().Where(dbx.HashExp{"username": username}).One(&person)
-	return &person, err
+	if err != nil {
+		return nil, err
+	}
+	return &person, nil
 }
 
 // Create saves a new person record in the database.
 func (dao *PersonDAO) Create(rs app.RequestScope, person *models.Person) error {
-	newPassword, _ := bcrypt.GenerateFromPassword([]byte(person.Password), 14)
+	err := person.Validate()
+	if err != nil {
+		return err
+	}
 
-	person.Password = string(newPassword)
+	person.Password = EncryptPassword(person.Password)
 
 	return rs.Tx().Model(person).Insert()
 }
 
 // Update saves the changes to an person in the database.
 func (dao *PersonDAO) Update(rs app.RequestScope, id int, person *models.Person) error {
-	if _, err := dao.Get(rs, id); err != nil {
+	oldPerson, err := dao.Get(rs, id)
+	if err != nil {
 		return err
 	}
-	person.Id = id
+
+	if person.Password == "" {
+		person.Password = *&oldPerson.Password
+	} else {
+		person.Password = EncryptPassword(person.Password)
+	}
+
+	errValidate := person.Validate()
+	if errValidate != nil {
+		return errValidate
+	}
+
 	return rs.Tx().Model(person).Exclude("Id").Update()
 }
 
@@ -58,16 +85,8 @@ func (dao *PersonDAO) Delete(rs app.RequestScope, id int) error {
 	return rs.Tx().Model(person).Delete()
 }
 
-// Count returns the number of the person records in the database.
-func (dao *PersonDAO) Count(rs app.RequestScope) (int, error) {
-	var count int
-	err := rs.Tx().Select("COUNT(*)").From("person").Row(&count)
-	return count, err
-}
+func EncryptPassword(password string) string {
+	newPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
 
-// Query retrieves the person records with the specified offset and limit from the database.
-func (dao *PersonDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Person, error) {
-	persons := []models.Person{}
-	err := rs.Tx().Select().OrderBy("id").Offset(int64(offset)).Limit(int64(limit)).All(&persons)
-	return persons, err
+	return string(newPassword)
 }
