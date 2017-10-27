@@ -10,6 +10,7 @@ type (
 	// personService especifica a interface que é utilizada pelo personResource.
 	personService interface {
 		Get(rs app.RequestScope, id int) (*models.Person, error)
+		GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error)
 		Update(rs app.RequestScope, id int, person *models.Person) (*models.Person, error)
 	}
 
@@ -22,11 +23,12 @@ type (
 // ServePersonResource define as rotas
 func ServePersonResource(rg *routing.RouteGroup, service personService) {
 	r := &personResource{service}
-	rg.Get("/me", r.get)
-	rg.Put("/me", r.update)
+	rg.Get("/me", r.Get)
+	rg.Get("/me/wallets", r.GetAuthenticatedPersonWallets)
+	rg.Put("/me", r.Update)
 }
 
-func (r *personResource) get(c *routing.Context) error {
+func (r *personResource) Get(c *routing.Context) error {
 	response, err := r.service.Get(app.GetRequestScope(c), app.GetRequestScope(c).UserID())
 	if err != nil {
 		return err
@@ -35,7 +37,16 @@ func (r *personResource) get(c *routing.Context) error {
 	return c.Write(response)
 }
 
-func (r *personResource) update(c *routing.Context) error {
+func (r *personResource) GetAuthenticatedPersonWallets(c *routing.Context) error {
+	response, err := r.service.GetAuthenticatedPersonWallets(app.GetRequestScope(c), app.GetRequestScope(c).UserID())
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
+}
+
+func (r *personResource) Update(c *routing.Context) error {
 	rs := app.GetRequestScope(c)
 
 	person := models.Person{}
