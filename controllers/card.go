@@ -33,7 +33,7 @@ func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	rg.Get("/cards/wallet/<id>", r.cardsWallet)
 	rg.Post("/cards", r.create)
 	rg.Post("/cards/pay", r.payCreditCard)
-	rg.Post("/cards/bestCard", r.getBestCards)
+	rg.Post("/cards/best-card", r.getBestCards)
 	rg.Put("/cards/<id>", r.update)
 	rg.Delete("/cards/<id>", r.delete)
 }
