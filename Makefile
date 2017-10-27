@@ -25,3 +25,10 @@ build: clean
 
 clean:
 	rm -rf server coverage.out coverage-all.out
+
+coveralls:
+	echo "mode: count" > coverage-all.out
+	$(foreach pkg,$(PACKAGES), \
+		go test -p=1 -cover -covermode=count -coverprofile=coverage.out ${pkg}; \
+		tail -n +2 coverage.out >> coverage-all.out;)
+		${GOPATH}/bin/goveralls -coverprofile=coverage-all.out -repotoken ${COVERAGE_TOKEN}
