@@ -79,10 +79,12 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	//Instanciando DAOs
 	cardDAO := daos.NewCardDAO()
 	userDAO := daos.NewPersonDAO()
+	walletDAO := daos.NewWalletDAO()
 
 	//Fazendo o load dos resources
 	controllers.ServeCardResource(rg, services.NewCardService(cardDAO))
 	controllers.ServePersonResource(rg, services.NewPersonService(userDAO))
+	controllers.ServeWalletResource(rg, services.NewWalletService(walletDAO))
 
 	//Ignorar o middleware de auth
 	controllers.ServeAuthResource(router.Group("/v1"), services.NewAuthService(userDAO))
