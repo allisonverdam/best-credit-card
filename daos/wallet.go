@@ -1,8 +1,12 @@
 package daos
 
 import (
+	"net/http"
+
 	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/allisonverdam/best-credit-card/models"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // WalletDAO faz a persistencia dos dados no bd
@@ -17,7 +21,22 @@ func NewWalletDAO() *WalletDAO {
 func (dao *WalletDAO) Get(rs app.RequestScope, id int) (*models.Wallet, error) {
 	wallet := models.Wallet{}
 	err := rs.Tx().Select().Model(id, &wallet)
+	if err != nil {
+		return nil, err
+	}
+
+	if *&wallet.PersonId != rs.UserID() {
+		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
+	}
+
 	return &wallet, err
+}
+
+// Get reads the wallet with the specified ID from the database.
+func (dao *WalletDAO) GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error) {
+	wallet := []models.Wallet{}
+	err := rs.Tx().Select().Where(dbx.HashExp{"person_id": personId}).All(&wallet)
+	return wallet, err
 }
 
 // Create saves a new wallet record in the database.
@@ -26,6 +45,9 @@ func (dao *WalletDAO) Create(rs app.RequestScope, wallet *models.Wallet) error {
 	if err != nil {
 		return err
 	}
+
+	wallet.PersonId = rs.UserID()
+
 	return rs.Tx().Model(wallet).Insert()
 }
 
@@ -35,6 +57,8 @@ func (dao *WalletDAO) Update(rs app.RequestScope, id int, wallet *models.Wallet)
 	if err != nil {
 		return err
 	}
+
+	wallet.PersonId = rs.UserID()
 
 	if _, err := dao.Get(rs, id); err != nil {
 		return err
