@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/daos"
 	"github.com/allisonverdam/best-credit-card/models"
 )
 
@@ -37,18 +38,22 @@ func (s *PersonService) Get(rs app.RequestScope, id int) (*models.Person, error)
 	return person, nil
 }
 
+// Get returns the person with the specified the person ID.
+func (s *PersonService) GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error) {
+	walletDao := daos.NewWalletDAO()
+
+	wallets, err := walletDao.GetAuthenticatedPersonWallets(rs, personId)
+	if err != nil {
+		return nil, err
+	}
+
+	return wallets, nil
+}
+
 // Update updates the person with the specified ID.
 func (s *PersonService) Update(rs app.RequestScope, id int, person *models.Person) (*models.Person, error) {
 	if err := s.dao.Update(rs, id, person); err != nil {
 		return nil, err
 	}
 	return s.dao.GetWithoutPassword(rs, id)
-}
-
-// Create creates a new person.
-func (s *PersonService) Create(rs app.RequestScope, person *models.Person) (*models.Person, error) {
-	if err := s.dao.Create(rs, person); err != nil {
-		return nil, err
-	}
-	return s.dao.GetWithoutPassword(rs, person.Id)
 }
