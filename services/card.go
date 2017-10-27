@@ -70,13 +70,8 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 		return nil, err
 	}
 
-	person, err := GetPersonByWallet(rs, wallet)
-	if err != nil {
-		return nil, err
-	}
-
 	//Verifica se o cartão pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, person.Id, "card")
+	err = VerifyPersonOwner(rs, wallet.PersonId, "card")
 	if err != nil {
 		return nil, err
 	}
