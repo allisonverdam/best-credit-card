@@ -16,10 +16,21 @@ func TestWalletDAO(t *testing.T) {
 	{
 		// Get
 		testDBCall(db, func(rs app.RequestScope) {
-			wallet, err := dao.Get(rs, 2)
+			wallet, err := dao.Get(rs, 1)
 			assert.Nil(t, err)
 			if assert.NotNil(t, wallet) {
-				assert.Equal(t, 2, wallet.Id)
+				assert.Equal(t, 1, wallet.Id)
+			}
+		})
+	}
+
+	{
+		// Get
+		testDBCall(db, func(rs app.RequestScope) {
+			wallets, err := dao.GetAuthenticatedPersonWallets(rs, rs.UserID())
+			assert.Nil(t, err)
+			if assert.NotNil(t, wallets) {
+				assert.Equal(t, 1, wallets[0].Id)
 			}
 		})
 	}
@@ -29,7 +40,6 @@ func TestWalletDAO(t *testing.T) {
 		testDBCall(db, func(rs app.RequestScope) {
 			wallet := &models.Wallet{
 				MaximumLimit: 500,
-				PersonId:     1,
 				RealLimit:    200,
 			}
 			err := dao.Create(rs, wallet)
@@ -44,7 +54,6 @@ func TestWalletDAO(t *testing.T) {
 			wallet := &models.Wallet{
 				Id:           1000,
 				MaximumLimit: 700,
-				PersonId:     99999999,
 			}
 			err := dao.Create(rs, wallet)
 			assert.NotNil(t, err)
@@ -58,12 +67,11 @@ func TestWalletDAO(t *testing.T) {
 			wallet := &models.Wallet{
 				Id:           1000,
 				MaximumLimit: 700,
-				PersonId:     99999999,
-				RealLimit:    100,
+				RealLimit:    0,
 			}
 			err := dao.Create(rs, wallet)
 			assert.NotNil(t, err)
-			assert.Equal(t, "pq: insert or update on table \"wallet\" violates foreign key constraint \"wallet_person_id_fkey\"", err.Error())
+			assert.Equal(t, "real_limit: cannot be blank.", err.Error())
 		})
 	}
 
@@ -73,7 +81,6 @@ func TestWalletDAO(t *testing.T) {
 			wallet := &models.Wallet{
 				Id:           1,
 				RealLimit:    234,
-				PersonId:     1,
 				MaximumLimit: 200,
 			}
 			err := dao.Update(rs, wallet.Id, wallet)
@@ -83,16 +90,16 @@ func TestWalletDAO(t *testing.T) {
 
 	{
 		// Update with error
+		//Wallet don't belong to authenticated user
 		testDBCall(db, func(rs app.RequestScope) {
 			wallet := &models.Wallet{
-				Id:           0,
+				Id:           2,
 				MaximumLimit: 42,
-				PersonId:     1,
 				RealLimit:    22,
 			}
 			err := dao.Update(rs, wallet.Id, wallet)
 			assert.NotNil(t, err)
-			assert.Equal(t, "sql: no rows in result set", err.Error())
+			assert.Equal(t, "FORBIDDEN", err.Error())
 		})
 	}
 
@@ -102,7 +109,6 @@ func TestWalletDAO(t *testing.T) {
 			wallet := &models.Wallet{
 				Id:           0,
 				MaximumLimit: 42,
-				PersonId:     1,
 			}
 			err := dao.Update(rs, wallet.Id, wallet)
 			assert.NotNil(t, err)
@@ -113,7 +119,7 @@ func TestWalletDAO(t *testing.T) {
 	{
 		// Delete
 		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 2)
+			err := dao.Delete(rs, 1)
 			assert.Nil(t, err)
 		})
 	}
