@@ -1,3 +1,10 @@
+// @APIVersion 1.0.0
+// @APITitle Best Credit Card
+// @APIDescription Adiministre melhor os seus cartões de crédito, com nossa api você usará sempre o melhor cartão de crédito para a sua compra.
+// @Contact allisonverdam@gmail.com
+// @License BSD
+// @LicenseUrl http://opensource.org/licenses/BSD-2-Clause
+// @BasePath https://best-credit-card.herokuapp.com/v1/
 package main
 
 import (

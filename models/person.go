@@ -6,11 +6,11 @@ import (
 )
 
 type Person struct {
-	Id       int    `json:"id" db:"id"`
-	Name     string `json:"name" db:"name"`
-	Username string `json:"username" db:"username"`
-	Email    string `json:"email" db:"email"`
-	Password string `json:"password,omitempty" db:"password"`
+	Id       int    `json:"id" db:"id" description:"Identificador da pessoa."`
+	Name     string `json:"name" db:"name" description:"Nome completo."`
+	Username string `json:"username" db:"username" description:"Usuario."`
+	Email    string `json:"email" db:"email" description:"Email."`
+	Password string `json:"password,omitempty" db:"password" description:"Senha."`
 }
 
 func (p Person) Validate() error {

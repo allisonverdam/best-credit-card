@@ -5,15 +5,15 @@ import (
 )
 
 type Card struct {
-	Id              int     `json:"id" db:"id"`
-	Number          string  `json:"number" db:"cc_number"`
-	DueDate         int     `json:"due_date" db:"cc_due_date"`
-	ExpirationMonth int     `json:"expiration_month" db:"cc_expiration_month"`
-	ExpirationYear  int     `json:"expiration_year" db:"cc_expiration_year"`
-	CVV             int     `json:"cvv" db:"cc_cvv"`
-	RealLimit       float64 `json:"real_limit" db:"cc_real_limit"`
-	CurrentLimit    float64 `json:"current_limit" db:"cc_current_limit"`
-	WalletId        int     `json:"wallet_id" db:"wallet_id"`
+	Id              int     `json:"id" db:"id" description:"Identificador do cartão."`
+	Number          string  `json:"number" db:"cc_number" description:"Número do cartão."`
+	DueDate         int     `json:"due_date" db:"cc_due_date" description:"Data de vencimento."`
+	ExpirationMonth int     `json:"expiration_month" db:"cc_expiration_month" description:"Mês de expiração."`
+	ExpirationYear  int     `json:"expiration_year" db:"cc_expiration_year" description:"Ano de expiração."`
+	CVV             int     `json:"cvv" db:"cc_cvv" description:"Código de verificação do cartão."`
+	RealLimit       float64 `json:"real_limit" db:"cc_real_limit" description:"Limite real do cartão."`
+	CurrentLimit    float64 `json:"current_limit" db:"cc_current_limit" description:"Limite definido pelo usuário."`
+	WalletId        int     `json:"wallet_id" db:"wallet_id" description:"ID da carteira que esse cartão pertence."`
 }
 
 func (m Card) Validate() error {
@@ -24,7 +24,7 @@ func (m Card) Validate() error {
 		validation.Field(&m.ExpirationYear, validation.Required),
 		validation.Field(&m.CVV, validation.Required),
 		validation.Field(&m.RealLimit, validation.Required),
-		validation.Field(&m.CurrentLimit, validation.Required),
+		validation.Field(&m.CurrentLimit, validation.Required, validation.Max(float64(*&m.RealLimit))),
 		validation.Field(&m.WalletId, validation.Required),
 	)
 }
