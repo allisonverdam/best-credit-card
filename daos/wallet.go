@@ -22,10 +22,6 @@ func (dao *WalletDAO) Get(rs app.RequestScope, id int) (*models.Wallet, error) {
 		return nil, err
 	}
 
-	// if *&wallet.PersonId != rs.UserID() {
-	// 	return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
-	// }
-
 	return &wallet, err
 }
 
@@ -42,6 +38,9 @@ func (dao *WalletDAO) Create(rs app.RequestScope, wallet *models.Wallet) error {
 	if err != nil {
 		return err
 	}
+
+	wallet.CurrentLimit = 0
+	wallet.MaximumLimit = 0
 
 	return rs.Tx().Model(wallet).Insert()
 }

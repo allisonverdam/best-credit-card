@@ -12,13 +12,13 @@ import (
 type (
 	// cardService especifica a interface que é utilizada pelo cardResource
 	cardService interface {
-		Get(rs app.RequestScope, id int) (*models.Card, error)
+		Get(rs app.RequestScope, card_id int) (*models.Card, error)
 		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
 		GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 		PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error)
 		Create(rs app.RequestScope, card *models.Card) (*models.Card, error)
-		Update(rs app.RequestScope, id int, card *models.Card) (*models.Card, error)
-		Delete(rs app.RequestScope, id int) (*models.Card, error)
+		Update(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error)
+		Delete(rs app.RequestScope, card_id int) (*models.Card, error)
 	}
 
 	// cardResource define os handlers para as chamadas do controller.
@@ -35,8 +35,8 @@ func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	rg.Post("/cards", r.create)
 	rg.Post("/cards/pay", r.payCreditCard)
 	rg.Post("/cards/best-card", r.getBestCards)
-	rg.Put("/cards/<id>", r.update)
-	rg.Delete("/cards/<id>", r.delete)
+	rg.Put("/cards/<card_id>", r.update)
+	rg.Delete("/cards/<card_id>", r.delete)
 }
 
 func (r *cardResource) getBestCards(c *routing.Context) error {
@@ -74,12 +74,12 @@ func (r *cardResource) payCreditCard(c *routing.Context) error {
 }
 
 func (r *cardResource) get(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("card_id"))
+	card_id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
 	}
 
-	card, err := r.service.Get(app.GetRequestScope(c), id)
+	card, err := r.service.Get(app.GetRequestScope(c), card_id)
 	if err != nil {
 		return err
 	}
@@ -122,19 +122,19 @@ func (r *cardResource) create(c *routing.Context) error {
 }
 
 func (r *cardResource) update(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	card_id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
 	}
 
 	rs := app.GetRequestScope(c)
 
-	card, err := r.service.Get(rs, id)
+	card, err := r.service.Get(rs, card_id)
 	if err != nil {
 		return err
 	}
 
-	cardBD, err := r.service.Update(rs, id, card)
+	cardBD, err := r.service.Update(rs, card_id, card)
 	if err != nil {
 		return err
 	}
@@ -143,12 +143,12 @@ func (r *cardResource) update(c *routing.Context) error {
 }
 
 func (r *cardResource) delete(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	card_id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
 	}
 
-	card, err := r.service.Delete(app.GetRequestScope(c), id)
+	card, err := r.service.Delete(app.GetRequestScope(c), card_id)
 	if err != nil {
 		return err
 	}

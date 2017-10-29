@@ -11,11 +11,10 @@ import (
 type (
 	// walletService especifica a interface que é utilizada pelo walletResource
 	walletService interface {
-		Get(rs app.RequestScope, id int) (*models.Wallet, error)
+		Get(rs app.RequestScope, wallet_id int) (*models.Wallet, error)
 		Create(rs app.RequestScope, model *models.Wallet) (*models.Wallet, error)
-		Update(rs app.RequestScope, id int, model *models.Wallet) (*models.Wallet, error)
-		Delete(rs app.RequestScope, id int) (*models.Wallet, error)
-		// GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error)
+		Update(rs app.RequestScope, wallet_id int, model *models.Wallet) (*models.Wallet, error)
+		Delete(rs app.RequestScope, wallet_id int) (*models.Wallet, error)
 	}
 
 	// walletResource define os handlers para as chamadas do controller.
@@ -27,19 +26,19 @@ type (
 // ServeCard define as rotas.
 func ServeWalletResource(rg *routing.RouteGroup, service walletService) {
 	r := &walletResource{service}
-	rg.Get("/wallets/<id>", r.Get)
+	rg.Get("/wallets/<wallet_id>", r.Get)
 	rg.Post("/wallets", r.Create)
-	rg.Put("/wallets/<id>", r.Update)
-	rg.Delete("/wallets/<id>", r.Delete)
+	rg.Put("/wallets/<wallet_id>", r.Update)
+	rg.Delete("/wallets/<wallet_id>", r.Delete)
 }
 
 func (r *walletResource) Get(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	wallet_id, err := strconv.Atoi(c.Param("wallet_id"))
 	if err != nil {
 		return err
 	}
 
-	response, err := r.service.Get(app.GetRequestScope(c), id)
+	response, err := r.service.Get(app.GetRequestScope(c), wallet_id)
 	if err != nil {
 		return err
 	}
@@ -61,14 +60,14 @@ func (r *walletResource) Create(c *routing.Context) error {
 }
 
 func (r *walletResource) Update(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	wallet_id, err := strconv.Atoi(c.Param("wallet_id"))
 	if err != nil {
 		return err
 	}
 
 	rs := app.GetRequestScope(c)
 
-	model, err := r.service.Get(rs, id)
+	model, err := r.service.Get(rs, wallet_id)
 	if err != nil {
 		return err
 	}
@@ -77,7 +76,7 @@ func (r *walletResource) Update(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.Update(rs, id, model)
+	response, err := r.service.Update(rs, wallet_id, model)
 	if err != nil {
 		return err
 	}
@@ -86,12 +85,12 @@ func (r *walletResource) Update(c *routing.Context) error {
 }
 
 func (r *walletResource) Delete(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	wallet_id, err := strconv.Atoi(c.Param("wallet_id"))
 	if err != nil {
 		return err
 	}
 
-	response, err := r.service.Delete(app.GetRequestScope(c), id)
+	response, err := r.service.Delete(app.GetRequestScope(c), wallet_id)
 	if err != nil {
 		return err
 	}
