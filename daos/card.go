@@ -61,7 +61,10 @@ func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, wallet
 		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
 	}
 
-	rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
+	errQuery := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
+	if errQuery != nil {
+		return nil, errQuery
+	}
 
 	return cards, nil
 }
@@ -88,4 +91,18 @@ func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {
 		return err
 	}
 	return rs.Tx().Model(card).Delete()
+}
+
+// GetWalletCardsLimits retorna a soma do limite real e do limite atual de todos os cartoes de uma carteira.
+func (dao *CardDAO) GetWalletCardsLimits(rs app.RequestScope, id int) (*models.Card, error) {
+	cardLimit := models.Card{}
+	card, err := dao.Get(rs, id)
+	if err != nil {
+		return nil, err
+	}
+	errQuery := rs.Tx().Select("SUM(cc_real_limit) cc_real_limit, SUM(cc_current_limit) cc_current_limit").Where(dbx.HashExp{"wallet_id": &card.WalletId}).All(&cardLimit)
+	if errQuery != nil {
+		return nil, errQuery
+	}
+	return &cardLimit, nil
 }
