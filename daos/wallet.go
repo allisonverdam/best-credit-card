@@ -43,8 +43,6 @@ func (dao *WalletDAO) Create(rs app.RequestScope, wallet *models.Wallet) error {
 		return err
 	}
 
-	wallet.PersonId = rs.UserID()
-
 	return rs.Tx().Model(wallet).Insert()
 }
 

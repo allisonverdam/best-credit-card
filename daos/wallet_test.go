@@ -42,7 +42,8 @@ func TestCreateWallet(t *testing.T) {
 	testDBCall(db, func(rs app.RequestScope) {
 		wallet := &models.Wallet{
 			MaximumLimit: 500,
-			RealLimit:    200,
+			CurrentLimit: 200,
+			PersonId:     1,
 		}
 		err := dao.Create(rs, wallet)
 		assert.Nil(t, err)
@@ -50,20 +51,20 @@ func TestCreateWallet(t *testing.T) {
 	})
 }
 
-func TestCreateWalletWithErrorRealLimitNotBlank(t *testing.T) {
+func TestCreateWalletWithErrorPersonNull(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewWalletDAO()
 
 	testDBCall(db, func(rs app.RequestScope) {
 		wallet := &models.Wallet{
-			Id:           1000,
-			MaximumLimit: 700,
+			MaximumLimit: 500,
+			CurrentLimit: 200,
 		}
 		err := dao.Create(rs, wallet)
-		assert.NotNil(t, err)
-		assert.Equal(t, "real_limit: cannot be blank.", err.Error())
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "person_id: cannot be blank.", err.Error())
+		}
 	})
-
 }
 
 func TestUpdateWallet(t *testing.T) {
@@ -73,7 +74,7 @@ func TestUpdateWallet(t *testing.T) {
 	testDBCall(db, func(rs app.RequestScope) {
 		wallet := &models.Wallet{
 			Id:           1,
-			RealLimit:    234,
+			CurrentLimit: 234,
 			MaximumLimit: 200,
 			PersonId:     1,
 		}
@@ -89,7 +90,8 @@ func TestUpdateWalletWithErrorNotExistWalletWithThisID(t *testing.T) {
 	testDBCall(db, func(rs app.RequestScope) {
 		wallet := &models.Wallet{
 			MaximumLimit: 42,
-			RealLimit:    22,
+			CurrentLimit: 22,
+			PersonId:     1,
 		}
 		err := dao.Update(rs, 99, wallet)
 		if assert.NotNil(t, err) {
@@ -104,6 +106,7 @@ func TestWalletDAO(t *testing.T) {
 
 	{
 		// Update with error
+		//"person_id: cannot be blank."
 		testDBCall(db, func(rs app.RequestScope) {
 			wallet := &models.Wallet{
 				Id:           0,
@@ -111,7 +114,7 @@ func TestWalletDAO(t *testing.T) {
 			}
 			err := dao.Update(rs, wallet.Id, wallet)
 			assert.NotNil(t, err)
-			assert.Equal(t, "real_limit: cannot be blank.", err.Error())
+			assert.Equal(t, "person_id: cannot be blank.", err.Error())
 		})
 	}
 

@@ -43,6 +43,7 @@ func (s *WalletService) Create(rs app.RequestScope, wallet *models.Wallet) (*mod
 	if err := wallet.Validate(); err != nil {
 		return nil, err
 	}
+
 	if err := s.dao.Create(rs, wallet); err != nil {
 		return nil, err
 	}
@@ -68,4 +69,15 @@ func (s *WalletService) Delete(rs app.RequestScope, id int) (*models.Wallet, err
 	}
 	err = s.dao.Delete(rs, id)
 	return wallet, err
+}
+
+func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card) error {
+	wallet, err := s.Get(rs, card.WalletId)
+	if err != nil {
+		return err
+	}
+
+	wallet.MaximumLimit = card.AvaliableLimit
+
+	return s.dao.Update(rs, card.WalletId, wallet)
 }
