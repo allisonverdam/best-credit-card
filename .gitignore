@@ -15,5 +15,5 @@
 glide.lock
 
 # Vendor
-vendor/
+vendor/*
 .vscode/*
