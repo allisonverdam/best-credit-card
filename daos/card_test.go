@@ -105,7 +105,7 @@ func TestCardDAO(t *testing.T) {
 				Id:              1000,
 				Number:          "1234123412341299",
 				RealLimit:       100,
-				CurrentLimit:    50,
+				AvaliableLimit:  50,
 				CVV:             123,
 				DueDate:         22,
 				ExpirationMonth: 01,

@@ -18,6 +18,8 @@ type cardDAO interface {
 	GetBestCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 	// Get returns the card with the specified card ID.
 	GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
+
+	GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error)
 	// Create saves a new card in the storage.
 	Create(rs app.RequestScope, card *models.Card) error
 	// Update updates the card with given ID in the storage.
@@ -72,14 +74,18 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 		return nil, err
 	}
 
-	if (card.CurrentLimit + order.Price) > card.RealLimit {
+	if (card.AvaliableLimit + order.Price) > card.RealLimit {
 		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit."})
 
 	}
 
-	card.CurrentLimit += order.Price
+	card.AvaliableLimit += order.Price
 
 	if err := s.dao.Update(rs, card.Id, card); err != nil {
+		return nil, err
+	}
+
+	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
 		return nil, err
 	}
 
@@ -139,6 +145,11 @@ func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Ca
 	if err := s.dao.Create(rs, card); err != nil {
 		return nil, err
 	}
+
+	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
+		return nil, err
+	}
+
 	return s.dao.Get(rs, card.Id)
 }
 
@@ -147,6 +158,11 @@ func (s *CardService) Update(rs app.RequestScope, id int, card *models.Card) (*m
 	if err := s.dao.Update(rs, id, card); err != nil {
 		return nil, err
 	}
+
+	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
+		return nil, err
+	}
+
 	return s.dao.Get(rs, id)
 }
 
@@ -169,7 +185,31 @@ func (s *CardService) Delete(rs app.RequestScope, id int) (*models.Card, error) 
 	}
 
 	err = s.dao.Delete(rs, id)
+
+	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
+		return nil, err
+	}
+
 	return card, err
+}
+
+//Retorna os limites dos cartoes de uma carteira
+func (s *CardService) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
+	card, err := s.dao.GetWalletCardsLimits(rs, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	return card, nil
+}
+
+func (s *CardService) UpdateWalletLimits(rs app.RequestScope, walletId int) error {
+	card, err := s.GetWalletCardsLimits(rs, walletId)
+	if err != nil {
+		return err
+	}
+
+	return NewWalletService(daos.NewWalletDAO()).UpdateWalletLimits(rs, *card)
 }
 
 //Retorna a carteira que o cartão faz parte
@@ -200,11 +240,4 @@ func GetPersonByWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Pers
 		return nil, err
 	}
 	return person, nil
-}
-
-func VerifyPersonOwner(rs app.RequestScope, id int, resource string) error {
-	if rs.UserID() != id {
-		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to the authenticated user."})
-	}
-	return nil
 }

@@ -42,7 +42,9 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
 	//caso tenha cartões com o cc_due_date igual retorna o com menor limite primeiro
-	rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC", "cc_current_limit ASC").All(&cards)
+	if err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).OrderBy("cc_due_date DESC", "cc_avaliable_limit ASC").All(&cards); err != nil {
+		return nil, err
+	}
 
 	return cards, nil
 }
@@ -94,15 +96,15 @@ func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {
 }
 
 // GetWalletCardsLimits retorna a soma do limite real e do limite atual de todos os cartoes de uma carteira.
-func (dao *CardDAO) GetWalletCardsLimits(rs app.RequestScope, id int) (*models.Card, error) {
-	cardLimit := models.Card{}
-	card, err := dao.Get(rs, id)
-	if err != nil {
-		return nil, err
-	}
-	errQuery := rs.Tx().Select("SUM(cc_real_limit) cc_real_limit, SUM(cc_current_limit) cc_current_limit").Where(dbx.HashExp{"wallet_id": &card.WalletId}).All(&cardLimit)
+func (dao *CardDAO) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
+	card := models.Card{}
+
+	errQuery := rs.Tx().Select("SUM(cc_real_limit) cc_real_limit, SUM(cc_current_limit) cc_current_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card)
 	if errQuery != nil {
 		return nil, errQuery
 	}
-	return &cardLimit, nil
+
+	//Adicionando wallet_id ao objeto, porque não vinha na query
+	card.WalletId = walletId
+	return &card, nil
 }
