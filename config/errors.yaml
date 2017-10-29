@@ -15,5 +15,8 @@ INVALID_DATA:
 FORBIDDEN:
   message: "{message}"
 
+METHOD_NOT_ALLOWED:
+  message: "Method not Allowed."
+
 ERROR:
   message: "{message}"
