@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/allisonverdam/best-credit-card/app"
@@ -23,14 +24,29 @@ func NewAuthService(dao personDAO) *AuthService {
 	return &AuthService{dao}
 }
 
-func (s *AuthService) Register(rs app.RequestScope, model *models.Person) (*models.Person, error) {
-	if err := model.Validate(); err != nil {
+func (s *AuthService) Register(rs app.RequestScope, person *models.Person) (*models.Person, error) {
+	var err error
+	if err = person.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Create(rs, model); err != nil {
+	if err := s.dao.Create(rs, person); err != nil {
 		return nil, err
 	}
-	return s.dao.GetWithoutPassword(rs, model.Id)
+
+	personDB, err := s.dao.GetWithoutPassword(rs, person.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	tempWallet := &models.Wallet{}
+	tempWallet.PersonId = personDB.Id
+
+	_, err = NewWalletService(daos.NewWalletDAO()).Create(rs, tempWallet)
+	if err != nil {
+		return nil, err
+	}
+
+	return personDB, err
 }
 
 func (s *AuthService) Login(c *routing.Context, credential models.Credential, signingKey string) (string, error) {
@@ -79,5 +95,12 @@ func CheckPasswordHash(password, hash string) bool {
 func JWTHandler(c *routing.Context, j *jwt.Token) error {
 	userID := j.Claims.(jwt.MapClaims)["id"].(float64)
 	app.GetRequestScope(c).SetUserID(int(userID))
+	return nil
+}
+
+func VerifyPersonOwner(rs app.RequestScope, id int, resource string) error {
+	if rs.UserID() != id {
+		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to the authenticated user."})
+	}
 	return nil
 }

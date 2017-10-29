@@ -27,6 +27,9 @@ func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
 func (dao *PersonDAO) GetWithoutPassword(rs app.RequestScope, id int) (*models.Person, error) {
 	person := models.Person{}
 	err := rs.Tx().Select().Model(id, &person)
+	if err != nil {
+		return nil, err
+	}
 
 	person.Password = ""
 
