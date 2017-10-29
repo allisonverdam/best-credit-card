@@ -60,6 +60,8 @@ func convertError(c *routing.Context, err error) error {
 			return errors.Unauthorized(err.Error())
 		case http.StatusNotFound:
 			return errors.NotFound("the requested resource")
+		case http.StatusMethodNotAllowed:
+			return errors.MethodNotAllowed()
 		}
 	}
 	return errors.InternalServerError(err)
