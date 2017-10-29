@@ -31,7 +31,17 @@ func NewWalletService(dao WalletDAO) *WalletService {
 
 // Get returns the wallet with the specified the wallet ID.
 func (s *WalletService) Get(rs app.RequestScope, id int) (*models.Wallet, error) {
-	return s.dao.Get(rs, id)
+	wallet, err := s.dao.Get(rs, id)
+	if err != nil {
+		return nil, err
+	}
+
+	//Verifica se o cartão pertence a pessoa que está autenticada
+	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
 }
 
 func (s *WalletService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
@@ -42,6 +52,14 @@ func (s *WalletService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]mo
 func (s *WalletService) Create(rs app.RequestScope, wallet *models.Wallet) (*models.Wallet, error) {
 	if err := wallet.Validate(); err != nil {
 		return nil, err
+	}
+
+	if rs.UserID() != 0 {
+		//Verifica se o cartão pertence a pessoa que está autenticada
+		err := VerifyPersonOwner(rs, wallet.PersonId, "card")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := s.dao.Create(rs, wallet); err != nil {
@@ -55,6 +73,13 @@ func (s *WalletService) Update(rs app.RequestScope, id int, wallet *models.Walle
 	if err := wallet.Validate(); err != nil {
 		return nil, err
 	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	err := VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	if err != nil {
+		return nil, err
+	}
+
 	if err := s.dao.Update(rs, id, wallet); err != nil {
 		return nil, err
 	}
@@ -67,12 +92,25 @@ func (s *WalletService) Delete(rs app.RequestScope, id int) (*models.Wallet, err
 	if err != nil {
 		return nil, err
 	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.dao.Delete(rs, id)
 	return wallet, err
 }
 
 func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card) error {
 	wallet, err := s.Get(rs, card.WalletId)
+	if err != nil {
+		return err
+	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
 	if err != nil {
 		return err
 	}
