@@ -75,25 +75,26 @@ func TestUpdateWallet(t *testing.T) {
 			Id:           1,
 			RealLimit:    234,
 			MaximumLimit: 200,
+			PersonId:     1,
 		}
 		err := dao.Update(rs, wallet.Id, wallet)
 		assert.Nil(t, err)
 	})
 }
 
-func TestUpdateWalletWithErrorWalletDontBelongToAuthenticatdUser(t *testing.T) {
+func TestUpdateWalletWithErrorNotExistWalletWithThisID(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewWalletDAO()
 
 	testDBCall(db, func(rs app.RequestScope) {
 		wallet := &models.Wallet{
-			Id:           2,
 			MaximumLimit: 42,
 			RealLimit:    22,
 		}
-		err := dao.Update(rs, wallet.Id, wallet)
-		assert.NotNil(t, err)
-		assert.Equal(t, "FORBIDDEN", err.Error())
+		err := dao.Update(rs, 99, wallet)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
 	})
 }
 

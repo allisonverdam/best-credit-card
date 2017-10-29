@@ -15,6 +15,8 @@ type WalletDAO interface {
 	Update(rs app.RequestScope, id int, wallet *models.Wallet) error
 	// Delete removes the wallet with given ID from the storage.
 	Delete(rs app.RequestScope, id int) error
+	//GetAuthenticatedPersonWallets return the wallets from authenticated person
+	GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error)
 }
 
 // WalletService provides services related with wallets.
@@ -30,6 +32,10 @@ func NewWalletService(dao WalletDAO) *WalletService {
 // Get returns the wallet with the specified the wallet ID.
 func (s *WalletService) Get(rs app.RequestScope, id int) (*models.Wallet, error) {
 	return s.dao.Get(rs, id)
+}
+
+func (s *WalletService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
+	return s.dao.GetAuthenticatedPersonWallets(rs, rs.UserID())
 }
 
 // Create creates a new wallet.

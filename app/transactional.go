@@ -35,7 +35,7 @@ func Transactional(db *dbx.DB) routing.Handler {
 				// o erro vai ser registrado pelo nosso logger
 				return e
 			}
-			// registra apensa o erro da transação
+			// registra apenas o erro da transação
 			rs.Error(e)
 		}
 

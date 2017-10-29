@@ -30,7 +30,7 @@ type (
 // ServeCard define as rotas.
 func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	r := &cardResource{service}
-	rg.Get("/cards/<id>", r.get)
+	rg.Get("/cards/<card_id>", r.get)
 	rg.Get("/cards/wallets/<wallet_id>", r.cardsWallet)
 	rg.Post("/cards", r.create)
 	rg.Post("/cards/pay", r.payCreditCard)
@@ -39,16 +39,6 @@ func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	rg.Delete("/cards/<id>", r.delete)
 }
 
-// @Title getBestCards
-// @Description Retorna o melhor cartão para a compra.
-// @Accept  json
-// @Param   price     body    int     true        "Valor da compra."
-// @Param   wallet_id        body   int     true        "ID da 'Wallet' onde vai buscar o(s) melhor(es) cartões."
-// @Success 200 {array}  models.Card "Retorna uma lista contendo o(s) melhor(es) cartões para essa compra."
-// @Failure 403 {object} errors.APIError    "O parametro 'wallet_id' informado não pertence ao usuário autenticado."
-// @Failure 400 {object} errors.APIError    "O parametro 'price' deve ser maior que 0."
-// @Resource /cards
-// @Router /cards/best-card/ [get]
 func (r *cardResource) getBestCards(c *routing.Context) error {
 	var order models.Order
 	if err := c.Read(&order); err != nil {
@@ -58,24 +48,14 @@ func (r *cardResource) getBestCards(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.GetBestCards(app.GetRequestScope(c), app.GetRequestScope(c).UserID(), &order)
+	card, err := r.service.GetBestCards(app.GetRequestScope(c), app.GetRequestScope(c).UserID(), &order)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(card)
 }
 
-// @Title payCreditCard
-// @Description Paga um cartao para liberar crédito.
-// @Accept  json
-// @Param   price     body    int     true        "Valor da compra."
-// @Param   card_id        body   int     true        "ID do 'Card' no qual vai efetuar o pagamento."
-// @Success 200 {object}  models.Card "Retorna os dados do cartão após efetuar o pagamento."
-// @Failure 403 {object} errors.APIError    "O parametro 'card_id' informado não pertence ao usuário autenticado."
-// @Failure 400 {object} errors.APIError    "O parametro 'price' deve ser maior que 0."
-// @Resource /cards
-// @Router /cards/pay/ [post]
 func (r *cardResource) payCreditCard(c *routing.Context) error {
 	var order models.Order
 	if err := c.Read(&order); err != nil {
@@ -85,37 +65,28 @@ func (r *cardResource) payCreditCard(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.PayCreditCard(app.GetRequestScope(c), *&order)
+	card, err := r.service.PayCreditCard(app.GetRequestScope(c), *&order)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(card)
 }
 
 func (r *cardResource) get(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
 	}
 
-	response, err := r.service.Get(app.GetRequestScope(c), id)
+	card, err := r.service.Get(app.GetRequestScope(c), id)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(card)
 }
 
-// @Title cardsWallet
-// @Description Retorna a lista de 'Cards' de uma determinada 'Wallet'.
-// @Accept  json
-// @Param   wallet_id     path    int     true        "ID da 'Wallet' que desejamos buscar os 'Cards'."
-// @Success 200 {array}  models.Card "Retorna os 'Cards' que fazem parte dessa 'Wallet'."
-// @Failure 403 {object} errors.APIError    "O parametro 'card_id' informado não pertence ao usuário autenticado."
-// @Failure 400 {object} errors.APIError    "O parametro 'price' deve ser maior que 0."
-// @Resource /cards
-// @Router /cards/wallets/{wallet_id} [get]
 func (r *cardResource) cardsWallet(c *routing.Context) error {
 	wallet_id, err := strconv.Atoi(c.Param("wallet_id"))
 	if err != nil {
@@ -132,25 +103,8 @@ func (r *cardResource) cardsWallet(c *routing.Context) error {
 	return c.Write(cards)
 }
 
-// @Title create
-// @Description Cria um novo 'Card'.
-// @Accept  json
-// @Param   number     body    float64     true        "Número do cartão."
-// @Param   due_date     body    int     true        "Data de vencimento do cartão."
-// @Param   expiration_month     body    int     true	"teste"
-// @Param   expiration_year     body    int	true	"teste"
-// @Param   cvv     body    int     true	"teste"
-// @Param   real_limit     body    float64     true	"teste"
-// @Param   current_limit     body    float64     true	"teste"
-// @Param   wallet_id     body    int     true	"teste"
-// @Success 200 {object}  models.Card "Retorna o cartão que acabou de ser criado."
-// @Failure 403 {object} errors.APIError    "O parametro 'wallet_id' informado não pertence ao usuário autenticado."
-// @Failure 400 {object} errors.APIError    "Se estiver faltando algum parametro."
-// @Failure 400 {object} errors.APIError    "O parametro 'current_limit' deve ser menor ou igual ao 'real_limit'."
-// @Resource /cards
-// @Router /cards/ [post]
 func (r *cardResource) create(c *routing.Context) error {
-	var card models.Card
+	card := models.Card{}
 	if err := c.Read(&card); err != nil {
 		return err
 	}
@@ -159,12 +113,12 @@ func (r *cardResource) create(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.Create(app.GetRequestScope(c), &card)
+	cardBD, err := r.service.Create(app.GetRequestScope(c), &card)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(cardBD)
 }
 
 func (r *cardResource) update(c *routing.Context) error {
@@ -180,16 +134,12 @@ func (r *cardResource) update(c *routing.Context) error {
 		return err
 	}
 
-	if err := c.Read(card); err != nil {
-		return err
-	}
-
-	response, err := r.service.Update(rs, id, card)
+	cardBD, err := r.service.Update(rs, id, card)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(cardBD)
 }
 
 func (r *cardResource) delete(c *routing.Context) error {
@@ -198,10 +148,10 @@ func (r *cardResource) delete(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.Delete(app.GetRequestScope(c), id)
+	card, err := r.service.Delete(app.GetRequestScope(c), id)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(card)
 }

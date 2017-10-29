@@ -15,6 +15,7 @@ type (
 		Create(rs app.RequestScope, model *models.Wallet) (*models.Wallet, error)
 		Update(rs app.RequestScope, id int, model *models.Wallet) (*models.Wallet, error)
 		Delete(rs app.RequestScope, id int) (*models.Wallet, error)
+		// GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error)
 	}
 
 	// walletResource define os handlers para as chamadas do controller.

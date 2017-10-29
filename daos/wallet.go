@@ -1,10 +1,7 @@
 package daos
 
 import (
-	"net/http"
-
 	"github.com/allisonverdam/best-credit-card/app"
-	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/allisonverdam/best-credit-card/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
@@ -25,9 +22,9 @@ func (dao *WalletDAO) Get(rs app.RequestScope, id int) (*models.Wallet, error) {
 		return nil, err
 	}
 
-	if *&wallet.PersonId != rs.UserID() {
-		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
-	}
+	// if *&wallet.PersonId != rs.UserID() {
+	// 	return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
+	// }
 
 	return &wallet, err
 }
@@ -57,8 +54,6 @@ func (dao *WalletDAO) Update(rs app.RequestScope, id int, wallet *models.Wallet)
 	if err != nil {
 		return err
 	}
-
-	wallet.PersonId = rs.UserID()
 
 	if _, err := dao.Get(rs, id); err != nil {
 		return err

@@ -32,6 +32,11 @@ func Forbidden(err *APIError) *APIError {
 	return NewAPIError(http.StatusForbidden, "FORBIDDEN", Params{})
 }
 
+// Forbidden cria um novo erro representando o erro "method not allowed" (HTTP 405)
+func MethodNotAllowed() *APIError {
+	return NewAPIError(http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", Params{})
+}
+
 // InvalidData converte o erro "data validation" em um erro customizado (HTTP 400)
 func InvalidData(errs validation.Errors) *APIError {
 	result := []validationError{}
