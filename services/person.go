@@ -39,10 +39,10 @@ func (s *PersonService) Get(rs app.RequestScope, id int) (*models.Person, error)
 }
 
 // Get returns the person with the specified the person ID.
-func (s *PersonService) GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error) {
+func (s *PersonService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
 	walletDao := daos.NewWalletDAO()
 
-	wallets, err := walletDao.GetAuthenticatedPersonWallets(rs, personId)
+	wallets, err := walletDao.GetAuthenticatedPersonWallets(rs, rs.UserID())
 	if err != nil {
 		return nil, err
 	}

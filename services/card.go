@@ -56,10 +56,6 @@ func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
 
 // Get returns the card with the specified the card ID.
 func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error) {
-	if err := order.ValidateCardIdAndPrice(); err != nil {
-		return nil, err
-	}
-
 	card, err := s.dao.Get(rs, order.CardId)
 	if err != nil {
 		return nil, err
@@ -135,7 +131,10 @@ func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Ca
 	}
 
 	//Verifica se a carteira pertence a pessoa que está autenticada
-	VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	if err != nil {
+		return nil, err
+	}
 
 	if err := s.dao.Create(rs, card); err != nil {
 		return nil, err
@@ -157,6 +156,18 @@ func (s *CardService) Delete(rs app.RequestScope, id int) (*models.Card, error) 
 	if err != nil {
 		return nil, err
 	}
+
+	wallet, err := GetWalletByCard(rs, card)
+	if err != nil {
+		return nil, err
+	}
+
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	err = VerifyPersonOwner(rs, wallet.PersonId, "card")
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.dao.Delete(rs, id)
 	return card, err
 }
@@ -165,21 +176,35 @@ func (s *CardService) Delete(rs app.RequestScope, id int) (*models.Card, error) 
 func GetWalletByCard(rs app.RequestScope, card *models.Card) (*models.Wallet, error) {
 	walletDao := daos.NewWalletDAO()
 	wallet, err := NewWalletService(walletDao).Get(rs, card.WalletId)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+}
 
-	return wallet, err
+//Retorna as carteiras de uma pessoa
+func GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
+	walletDao := daos.NewWalletDAO()
+	wallet, err := NewWalletService(walletDao).GetAuthenticatedPersonWallets(rs)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
 }
 
 //Retorna a pessoa dona do cartão
 func GetPersonByWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Person, error) {
 	personDao := daos.NewPersonDAO()
 	person, err := NewPersonService(personDao).Get(rs, wallet.Id)
-
-	return person, err
+	if err != nil {
+		return nil, err
+	}
+	return person, nil
 }
 
 func VerifyPersonOwner(rs app.RequestScope, id int, resource string) error {
 	if rs.UserID() != id {
-		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to this user."})
+		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to the authenticated user."})
 	}
 	return nil
 }
