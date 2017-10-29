@@ -37,7 +37,7 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 
 	//Verifica se a carteira pertence a pessoa que está autenticada
 	if *&wallet.PersonId != personId {
-		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to this user."})
+		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to this user.", "developer_message": ""})
 	}
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
@@ -60,7 +60,7 @@ func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, wallet
 	}
 
 	if *&wallet.PersonId != personId {
-		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user."})
+		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user.", "developer_message": ""})
 	}
 
 	errQuery := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
@@ -99,7 +99,7 @@ func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {
 func (dao *CardDAO) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
 	card := models.Card{}
 
-	errQuery := rs.Tx().Select("SUM(cc_real_limit) cc_real_limit, SUM(cc_current_limit) cc_current_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card)
+	errQuery := rs.Tx().Select("SUM(cc_real_limit) cc_real_limit, SUM(cc_avaliable_limit) cc_avaliable_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card)
 	if errQuery != nil {
 		return nil, errQuery
 	}

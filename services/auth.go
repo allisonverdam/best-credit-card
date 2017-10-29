@@ -100,7 +100,7 @@ func JWTHandler(c *routing.Context, j *jwt.Token) error {
 
 func VerifyPersonOwner(rs app.RequestScope, id int, resource string) error {
 	if rs.UserID() != id {
-		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This " + resource + " does not belong to the authenticated user."})
+		return errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "You're not allowed to do this.", "developer_message": "This " + resource + " does not belong to the authenticated user."})
 	}
 	return nil
 }

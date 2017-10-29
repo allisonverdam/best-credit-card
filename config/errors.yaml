@@ -14,9 +14,11 @@ INVALID_DATA:
 
 FORBIDDEN:
   message: "{message}"
+  developer_message: "{developer_message}"
 
 METHOD_NOT_ALLOWED:
   message: "Method not Allowed."
 
 ERROR:
   message: "{message}"
+  developer_message: "{developer_message}"

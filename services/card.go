@@ -75,7 +75,7 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 	}
 
 	if (card.AvaliableLimit + order.Price) > card.RealLimit {
-		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit."})
+		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit.", "developer_message":""})
 
 	}
 
