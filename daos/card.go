@@ -99,7 +99,7 @@ func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {
 func (dao *CardDAO) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
 	card := models.Card{}
 
-	errQuery := rs.Tx().Select("SUM(cc_real_limit) cc_real_limit, SUM(cc_avaliable_limit) cc_avaliable_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card)
+	errQuery := rs.Tx().Select("COALESCE(SUM(cc_real_limit), 0) cc_real_limit, COALESCE(SUM(cc_avaliable_limit), 0) cc_avaliable_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card)
 	if errQuery != nil {
 		return nil, errQuery
 	}
