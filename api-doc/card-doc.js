@@ -1,8 +1,9 @@
 /**
-* @api {post} /cards/best-card GetBestCards - Retorna o melhor cartão para a compra.
+* @api {post} /cards/best-card GetBestCards
 * @apiVersion 1.0.0
 * @apiName GetBestCards
 * @apiGroup Card
+* @apiDescription Retorna o melhor cartão para a compra.
 *
 * @apiUse AuthRequired
 *
@@ -24,7 +25,7 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 *     ]
@@ -38,14 +39,16 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This wallet does not belong to this user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This wallet does not belong to the authenticated user."
 *     }
 */
 
 /**
-* @api {post} /cards/pay PayCreditCard - Pagar um cartão para liberar crédito.
+* @api {post} /cards/pay PayCreditCard
 * @apiVersion 1.0.0
 * @apiName PayCreditCard
+* @apiDescription Pagar um cartão para liberar crédito.
 * @apiGroup Card
 * @apiUse AuthRequired
 * @apiUse UserNotFoundError
@@ -57,7 +60,8 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This card does not belong to the authenticated user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
 *     }
 * @apiParamExample {json} Request-Example:
 *     {
@@ -75,15 +79,16 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 **/
 
 /**
-* @api {get} /cards/:card_id GetCard - Retorna o cartao com o id passado por parametro.
+* @api {get} /cards/:card_id GetCard
 * @apiVersion 1.0.0
 * @apiName GetCard
+* @apiDescription Retorna o cartao com o id passado por parametro.
 * @apiGroup Card
 * @apiUse AuthRequired
 * @apiUse UserNotFoundError
@@ -93,7 +98,8 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This card does not belong to the authenticated user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
 *     }
 * @apiSuccessExample Success-Response:
 *     HTTP/1.1 200 OK
@@ -105,15 +111,16 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 **/
 
 /**
-* @api {get} /cards/:wallet_id CardsWallet - Retorna a lista de cartões de uma determinada carteira.
+* @api {get} /cards/wallets/:wallet_id GetWalletCards
 * @apiVersion 1.0.0
-* @apiName CardsWallet
+* @apiName GetWalletCards
+* @apiDescription Retorna a lista de cartões de uma determinada carteira.
 * @apiGroup Card
 * @apiUse AuthRequired
 * @apiUse UserNotFoundError
@@ -123,7 +130,8 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This wallet does not belong to the authenticated user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This wallet does not belong to the authenticated user."
 *     }
 *
 * @apiSuccessExample Success-Response:
@@ -137,16 +145,17 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 *     ]
 **/
 
 /**
-* @api {post} /cards Create - Cria um novo cartão.
+* @api {post} /cards CreateCard
 * @apiVersion 1.0.0
-* @apiName Create
+* @apiName CreateCard
+* @apiDescription Cria um novo cartão.
 * @apiGroup Card
 * @apiUse AuthRequired
 * @apiUse UserNotFoundError
@@ -156,7 +165,8 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This wallet does not belong to the authenticated user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This wallet does not belong to the authenticated user."
 *     }
 * @apiParamExample {json} Request-Example:
 *      {
@@ -166,7 +176,7 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 *
@@ -180,15 +190,16 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 **/
 
 /**
-* @api {delete} /cards/:card_id Delete - Apaga o cartao com o id passado por parametro.
+* @api {delete} /cards/:card_id DeleteCard
 * @apiVersion 1.0.0
-* @apiName Delete
+* @apiName DeleteCard
+* @apiDescription Apaga o cartao com o id passado por parametro.
 * @apiGroup Card
 * @apiUse AuthRequired
 * @apiUse UserNotFoundError
@@ -198,7 +209,8 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This card does not belong to the authenticated user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
 *     }
 * @apiSuccessExample Success-Response:
 *     HTTP/1.1 200 OK
@@ -210,15 +222,16 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "current_limit": 450,
+*	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
 **/
 
 /**
-* @api {put} /cards/:card_id Update - Atualizar um cartão.
+* @api {put} /cards/:card_id UpdateCard
 * @apiVersion 1.0.0
-* @apiName Update
+* @apiName UpdateCard
+* @apiDescription Atualizar um cartão.
 * @apiGroup Card
 * @apiUse AuthRequired
 * @apiUse UserNotFoundError
@@ -228,7 +241,8 @@
 *     HTTP/1.1 403 Forbidden
 *     {
 *	"error_code": "FORBIDDEN",
-*	"message": "This card does not belong to the authenticated user."
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
 *     }
 * @apiParamExample {json} Request-Example:
 *      {
@@ -246,7 +260,7 @@
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 700,
-*	 "current_limit": 550,
+*	 "avaliable_limit": 550,
 *	 "wallet_id": 1
 *      }
 **/

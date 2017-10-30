@@ -1,8 +1,9 @@
 /**
-* @api {post} /register Register - Registra um novo usuário.
+* @api {post} /register Register
 * @apiVersion 1.0.0
 * @apiName Register
 * @apiGroup Auth
+* @apiDescription Registra um novo usuário.
 *
 * @apiUse ContentTypeJson
 *
@@ -10,7 +11,7 @@
 *     {
 *       "email":"amanda@gmail.com",
 *       "name":"amanda",
-*       "password":as232ff,
+*       "password":"as232ff",
 *       "username":"amanda"
 *     }
 *
@@ -27,10 +28,11 @@
 */
 
 /**
-* @api {post} /login Login - Autentica o usuário.
+* @api {post} /login Login
 * @apiVersion 1.0.0
 * @apiName Login
 * @apiGroup Auth
+* @apiDescription Autentica o usuário.
 *
 * @apiUse ContentTypeJson
 * @apiUse InvalidCredentials

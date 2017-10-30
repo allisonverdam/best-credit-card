@@ -1,7 +1,8 @@
 /**
-* @api {get} /me GetPerson - Retorna o usuário autenticado.
+* @api {get} /me GetAuthenticatedUser
 * @apiVersion 1.0.0
-* @apiName GetPerson
+* @apiName GetAuthenticatedUser
+* @apiDescription Retorna o usuário autenticado.
 * @apiGroup Person
 * @apiUse AuthRequired
 *
@@ -16,9 +17,10 @@
 **/
 
 /**
-* @api {get} /me/wallets GetPersonWallets - Retorna as carteiras do usuário autenticado.
+* @api {get} /me/wallets GetAuthenticatedUserWallets
 * @apiVersion 1.0.0
-* @apiName GetPersonWallets
+* @apiName GetAuthenticatedUserWallets
+* @apiDescription Retorna as carteiras do usuário autenticado.
 * @apiGroup Person
 * @apiUse AuthRequired
 *
@@ -41,9 +43,10 @@
 **/
 
 /**
-* @api {put} /me UpdatePerson - Atualiza o usuário autenticado.
+* @api {put} /me UpdateAuthenticatedUser
 * @apiVersion 1.0.0
-* @apiName UpdatePerson
+* @apiName UpdateGetAuthenticatedUserWallets
+* @apiDescription Atualiza o usuário autenticado.
 * @apiGroup Person
 * @apiUse AuthRequired
 *
