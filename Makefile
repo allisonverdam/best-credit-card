@@ -18,13 +18,13 @@ cover: test
 	go tool cover -html=coverage-all.out
 
 run:
-	go run ${LDFLAGS} server.go
+	go run ${LDFLAGS} main.go
 
 build: clean
-	go build ${LDFLAGS} -a -o server server.go
+	go build ${LDFLAGS} -a -o main main.go
 
 clean:
-	rm -rf server coverage.out coverage-all.out
+	rm -rf main coverage.out coverage-all.out
 
 coveralls:
 	echo "mode: count" > coverage-all.out
