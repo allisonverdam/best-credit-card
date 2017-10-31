@@ -1,4 +1,3 @@
-// @SubApi Card management API [/cards]
 package controllers
 
 import (
@@ -12,13 +11,13 @@ import (
 type (
 	// cardService especifica a interface que é utilizada pelo cardResource
 	cardService interface {
-		Get(rs app.RequestScope, card_id int) (*models.Card, error)
+		GetCard(rs app.RequestScope, card_id int) (*models.Card, error)
 		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
 		GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
 		PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error)
-		Create(rs app.RequestScope, card *models.Card) (*models.Card, error)
-		Update(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error)
-		Delete(rs app.RequestScope, card_id int) (*models.Card, error)
+		CreateCard(rs app.RequestScope, card *models.Card) (*models.Card, error)
+		UpdateCard(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error)
+		DeleteCard(rs app.RequestScope, card_id int) (*models.Card, error)
 	}
 
 	// cardResource define os handlers para as chamadas do controller.
@@ -30,16 +29,61 @@ type (
 // ServeCard define as rotas.
 func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	r := &cardResource{service}
-	rg.Get("/cards/<card_id>", r.get)
-	rg.Get("/cards/wallets/<wallet_id>", r.cardsWallet)
-	rg.Post("/cards", r.create)
-	rg.Post("/cards/pay", r.payCreditCard)
-	rg.Post("/cards/best-card", r.getBestCards)
-	rg.Put("/cards/<card_id>", r.update)
-	rg.Delete("/cards/<card_id>", r.delete)
+	rg.Get("/cards/<card_id>", r.GetCard)
+	rg.Get("/cards/wallets/<wallet_id>", r.GetWalletCards)
+	rg.Post("/cards", r.CreateCard)
+	rg.Post("/cards/pay", r.PayCreditCard)
+	rg.Post("/cards/best-card", r.GetBestCards)
+	rg.Put("/cards/<card_id>", r.UpdateCard)
+	rg.Delete("/cards/<card_id>", r.DeleteCard)
 }
 
-func (r *cardResource) getBestCards(c *routing.Context) error {
+/**
+* @api {post} /cards/best-card GetBestCards
+* @apiVersion 1.0.0
+* @apiName GetBestCards
+* @apiGroup Card
+* @apiDescription Retorna o melhor cartão para a compra.
+*
+* @apiUse AuthRequired
+*
+* @apiParamExample {json} Request-Example:
+*     {
+*       "price": 100,
+		"wallet_id": 1
+*     }
+*
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*     [
+*      {
+*	 "id": 3,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+*     ]
+*
+* @apiUse NotFoundError
+* @apiUse ValidatePrice
+*
+* @apiError Forbidden O parametro 'wallet_id' informado não pertence ao usuário autenticado.
+* @apiError ValidatePrice O parametro 'price' não pode ser menor que 0.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This wallet does not belong to the authenticated user."
+*     }
+*/
+func (r *cardResource) GetBestCards(c *routing.Context) error {
 	var order models.Order
 	if err := c.Read(&order); err != nil {
 		return err
@@ -56,7 +100,46 @@ func (r *cardResource) getBestCards(c *routing.Context) error {
 	return c.Write(card)
 }
 
-func (r *cardResource) payCreditCard(c *routing.Context) error {
+/**
+* @api {post} /cards/pay PayCreditCard
+* @apiVersion 1.0.0
+* @apiName PayCreditCard
+* @apiDescription Pagar um cartão para liberar crédito.
+* @apiGroup Card
+* @apiUse AuthRequired
+* @apiUse NotFoundError
+* @apiUse ValidatePrice
+*
+* @apiError Forbidden O parametro 'wallet_id' informado não pertence ao usuário autenticado.
+* @apiError ValidatePrice O parametro 'price' não pode ser menor que 0.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
+*     }
+* @apiParamExample {json} Request-Example:
+*     {
+*       "price": 100,
+		"card_id": 1
+*     }
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*      {
+*	 "id": 1,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+**/
+func (r *cardResource) PayCreditCard(c *routing.Context) error {
 	var order models.Order
 	if err := c.Read(&order); err != nil {
 		return err
@@ -73,13 +156,44 @@ func (r *cardResource) payCreditCard(c *routing.Context) error {
 	return c.Write(card)
 }
 
-func (r *cardResource) get(c *routing.Context) error {
+/**
+* @api {GetCard} /cards/:card_id GetCard
+* @apiVersion 1.0.0
+* @apiName GetCard
+* @apiDescription Retorna o cartao com o id passado por parametro.
+* @apiGroup Card
+* @apiUse AuthRequired
+* @apiUse NotFoundError
+*
+* @apiError Forbidden O cartão não pertence ao usuário autenticado.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
+*     }
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*      {
+*	 "id": 3,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+**/
+func (r *cardResource) GetCard(c *routing.Context) error {
 	card_id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
 	}
 
-	card, err := r.service.Get(app.GetRequestScope(c), card_id)
+	card, err := r.service.GetCard(app.GetRequestScope(c), card_id)
 	if err != nil {
 		return err
 	}
@@ -87,7 +201,41 @@ func (r *cardResource) get(c *routing.Context) error {
 	return c.Write(card)
 }
 
-func (r *cardResource) cardsWallet(c *routing.Context) error {
+/**
+* @api {get} /cards/wallets/:wallet_id GetWalletCards
+* @apiVersion 1.0.0
+* @apiName GetWalletCards
+* @apiDescription Retorna a lista de cartões de uma determinada carteira.
+* @apiGroup Card
+* @apiUse AuthRequired
+* @apiUse NotFoundError
+*
+* @apiError Forbidden O cartão não pertence ao usuário autenticado.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This wallet does not belong to the authenticated user."
+*     }
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*     [
+*      {
+*	 "id": 3,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+*     ]
+**/
+func (r *cardResource) GetWalletCards(c *routing.Context) error {
 	wallet_id, err := strconv.Atoi(c.Param("wallet_id"))
 	if err != nil {
 		return err
@@ -103,7 +251,50 @@ func (r *cardResource) cardsWallet(c *routing.Context) error {
 	return c.Write(cards)
 }
 
-func (r *cardResource) create(c *routing.Context) error {
+/**
+* @api {post} /cards CreateCard
+* @apiVersion 1.0.0
+* @apiName CreateCard
+* @apiDescription Cria um novo cartão.
+* @apiGroup Card
+* @apiUse AuthRequired
+* @apiUse NotFoundError
+*
+* @apiError Forbidden Essa carteira não pertence ao usuário autenticado.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This wallet does not belong to the authenticated user."
+*     }
+* @apiParamExample {json} Request-Example:
+*      {
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*      {
+*	 "id": 3,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+**/
+func (r *cardResource) CreateCard(c *routing.Context) error {
 	card := models.Card{}
 	if err := c.Read(&card); err != nil {
 		return err
@@ -113,7 +304,7 @@ func (r *cardResource) create(c *routing.Context) error {
 		return err
 	}
 
-	cardBD, err := r.service.Create(app.GetRequestScope(c), &card)
+	cardBD, err := r.service.CreateCard(app.GetRequestScope(c), &card)
 	if err != nil {
 		return err
 	}
@@ -121,7 +312,44 @@ func (r *cardResource) create(c *routing.Context) error {
 	return c.Write(cardBD)
 }
 
-func (r *cardResource) update(c *routing.Context) error {
+/**
+* @api {put} /cards/:card_id UpdateCard
+* @apiVersion 1.0.0
+* @apiName UpdateCard
+* @apiDescription Atualizar um cartão.
+* @apiGroup Card
+* @apiUse AuthRequired
+* @apiUse NotFoundError
+*
+* @apiError Forbidden Essa carteira não pertence ao usuário autenticado.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
+*     }
+* @apiParamExample {json} Request-Example:
+*      {
+*	 "real_limit": 700,
+*	 "current_limit": 550,
+*      }
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*      {
+*	 "id": 3,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 700,
+*	 "avaliable_limit": 550,
+*	 "wallet_id": 1
+*      }
+**/
+func (r *cardResource) UpdateCard(c *routing.Context) error {
 	card_id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
@@ -129,12 +357,12 @@ func (r *cardResource) update(c *routing.Context) error {
 
 	rs := app.GetRequestScope(c)
 
-	card, err := r.service.Get(rs, card_id)
+	card, err := r.service.GetCard(rs, card_id)
 	if err != nil {
 		return err
 	}
 
-	cardBD, err := r.service.Update(rs, card_id, card)
+	cardBD, err := r.service.UpdateCard(rs, card_id, card)
 	if err != nil {
 		return err
 	}
@@ -142,13 +370,44 @@ func (r *cardResource) update(c *routing.Context) error {
 	return c.Write(cardBD)
 }
 
-func (r *cardResource) delete(c *routing.Context) error {
+/**
+* @api {DeleteCard} /cards/:card_id DeleteCard
+* @apiVersion 1.0.0
+* @apiName DeleteCard
+* @apiDescription Apaga o cartao com o id passado por parametro.
+* @apiGroup Card
+* @apiUse AuthRequired
+* @apiUse NotFoundError
+*
+* @apiError Forbidden O cartão não pertence ao usuário autenticado.
+* @apiErrorExample Forbidden:
+*     HTTP/1.1 403 Forbidden
+*     {
+*	"error_code": "FORBIDDEN",
+*	"message": "You're not allowed to do this.",
+*	"developer_message": "This card does not belong to the authenticated user."
+*     }
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*      {
+*	 "id": 3,
+*	 "number": "1234123412341232",
+*	 "due_date": 11,
+*	 "expiration_month": 8,
+*	 "expiration_year": 16,
+*	 "cvv": 123,
+*	 "real_limit": 500,
+*	 "avaliable_limit": 450,
+*	 "wallet_id": 1
+*      }
+**/
+func (r *cardResource) DeleteCard(c *routing.Context) error {
 	card_id, err := strconv.Atoi(c.Param("card_id"))
 	if err != nil {
 		return err
 	}
 
-	card, err := r.service.Delete(app.GetRequestScope(c), card_id)
+	card, err := r.service.DeleteCard(app.GetRequestScope(c), card_id)
 	if err != nil {
 		return err
 	}

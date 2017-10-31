@@ -29,7 +29,7 @@ func (s *AuthService) Register(rs app.RequestScope, person *models.Person) (*mod
 	if err = person.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Create(rs, person); err != nil {
+	if err := s.dao.CreatePerson(rs, person); err != nil {
 		return nil, err
 	}
 
@@ -41,7 +41,7 @@ func (s *AuthService) Register(rs app.RequestScope, person *models.Person) (*mod
 	tempWallet := &models.Wallet{}
 	tempWallet.PersonId = personDB.Id
 
-	_, err = NewWalletService(daos.NewWalletDAO()).Create(rs, tempWallet)
+	_, err = NewWalletService(daos.NewWalletDAO()).CreateWallet(rs, tempWallet)
 	if err != nil {
 		return nil, err
 	}

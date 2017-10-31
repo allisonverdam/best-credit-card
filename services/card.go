@@ -12,20 +12,20 @@ import (
 
 // cardDAO specifies the interface of the card DAO needed by CardService.
 type cardDAO interface {
-	// Get returns the card with the specified card ID.
-	Get(rs app.RequestScope, id int) (*models.Card, error)
-	// Get returns the card with the specified card ID.
-	GetBestCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
-	// Get returns the card with the specified card ID.
-	GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
-
+	// GetCard returns the card with the specified ID.
+	GetCard(rs app.RequestScope, card_id int) (*models.Card, error)
+	// GetBestCardsByWalletId returns the best cards to a order in a wallet with the specified ID.
+	GetBestCardsByWallet(rs app.RequestScope, personId int, wallet models.Wallet) ([]models.Card, error)
+	// GetCardsByWalletId returns the card of a wallet with the specified ID.
+	GetCardsByWallet(rs app.RequestScope, personId int, wallet models.Wallet) ([]models.Card, error)
+	//GetWalletCardsLimits return the limits of a wallet with the specified ID
 	GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error)
-	// Create saves a new card in the storage.
-	Create(rs app.RequestScope, card *models.Card) error
-	// Update updates the card with given ID in the storage.
-	Update(rs app.RequestScope, id int, card *models.Card) error
-	// Delete removes the card with given ID from the storage.
-	Delete(rs app.RequestScope, id int) error
+	// CreateCard saves a new card in the storage.
+	CreateCard(rs app.RequestScope, card *models.Card) error
+	// UpdateCard updates the card with given ID in the storage.
+	UpdateCard(rs app.RequestScope, card_id int, card *models.Card) error
+	// DeleteCard removes the card with given ID from the storage.
+	DeleteCard(rs app.RequestScope, card_id int) error
 }
 
 // CardService provides services related with cards.
@@ -38,9 +38,9 @@ func NewCardService(dao cardDAO) *CardService {
 	return &CardService{dao}
 }
 
-// Get returns the card with the specified the card ID.
-func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
-	card, err := s.dao.Get(rs, id)
+// GetCard returns the card with the specified the card ID.
+func (s *CardService) GetCard(rs app.RequestScope, card_id int) (*models.Card, error) {
+	card, err := s.dao.GetCard(rs, card_id)
 
 	wallet, walletErr := GetWalletByCard(rs, card)
 	if walletErr != nil {
@@ -56,9 +56,9 @@ func (s *CardService) Get(rs app.RequestScope, id int) (*models.Card, error) {
 	return card, err
 }
 
-// Get returns the card with the specified the card ID.
+// GetCard returns the card with the specified the card ID.
 func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error) {
-	card, err := s.dao.Get(rs, order.CardId)
+	card, err := s.dao.GetCard(rs, order.CardId)
 	if err != nil {
 		return nil, err
 	}
@@ -75,13 +75,13 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 	}
 
 	if (card.AvaliableLimit + order.Price) > card.RealLimit {
-		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit.", "developer_message":""})
+		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit.", "developer_message": ""})
 
 	}
 
 	card.AvaliableLimit += order.Price
 
-	if err := s.dao.Update(rs, card.Id, card); err != nil {
+	if err := s.dao.UpdateCard(rs, card.Id, card); err != nil {
 		return nil, err
 	}
 
@@ -92,13 +92,22 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 	return card, nil
 }
 
-// Get returns the card with the specified the card ID.
+// GetCard returns the card with the specified the card ID.
 func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error) {
 	if err := order.Validate(); err != nil {
 		return nil, err
 	}
 
-	cards, err := s.dao.GetBestCardsByWalletId(rs, personId, order.WalletId)
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, order.WalletId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = VerifyPersonOwner(rs, wallet.PersonId, "wallet"); err != nil {
+		return nil, err
+	}
+
+	cards, err := s.dao.GetBestCardsByWallet(rs, personId, *wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -124,13 +133,22 @@ func (s *CardService) GetBestCards(rs app.RequestScope, personId int, order *mod
 	return bestCards, err
 }
 
-// Get returns the card with the specified the card ID.
+// GetCard returns the card with the specified the card ID.
 func (s *CardService) GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
-	return s.dao.GetCardsByWalletId(rs, personId, walletId)
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = VerifyPersonOwner(rs, wallet.PersonId, "wallet"); err != nil {
+		return nil, err
+	}
+
+	return s.dao.GetCardsByWallet(rs, personId, *wallet)
 }
 
-// Create creates a new card.
-func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Card, error) {
+// CreateCard creates a new card.
+func (s *CardService) CreateCard(rs app.RequestScope, card *models.Card) (*models.Card, error) {
 	wallet, err := GetWalletByCard(rs, card)
 	if err != nil {
 		return nil, err
@@ -142,7 +160,7 @@ func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Ca
 		return nil, err
 	}
 
-	if err := s.dao.Create(rs, card); err != nil {
+	if err := s.dao.CreateCard(rs, card); err != nil {
 		return nil, err
 	}
 
@@ -150,12 +168,12 @@ func (s *CardService) Create(rs app.RequestScope, card *models.Card) (*models.Ca
 		return nil, err
 	}
 
-	return s.dao.Get(rs, card.Id)
+	return s.dao.GetCard(rs, card.Id)
 }
 
-// Update updates the card with the specified ID.
-func (s *CardService) Update(rs app.RequestScope, id int, card *models.Card) (*models.Card, error) {
-	if err := s.dao.Update(rs, id, card); err != nil {
+// UpdateCard updates the card with the specified ID.
+func (s *CardService) UpdateCard(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error) {
+	if err := s.dao.UpdateCard(rs, card_id, card); err != nil {
 		return nil, err
 	}
 
@@ -163,12 +181,12 @@ func (s *CardService) Update(rs app.RequestScope, id int, card *models.Card) (*m
 		return nil, err
 	}
 
-	return s.dao.Get(rs, id)
+	return s.dao.GetCard(rs, card_id)
 }
 
-// Delete deletes the card with the specified ID.
-func (s *CardService) Delete(rs app.RequestScope, id int) (*models.Card, error) {
-	card, err := s.dao.Get(rs, id)
+// DeleteCard deletes the card with the specified ID.
+func (s *CardService) DeleteCard(rs app.RequestScope, card_id int) (*models.Card, error) {
+	card, err := s.dao.GetCard(rs, card_id)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +202,7 @@ func (s *CardService) Delete(rs app.RequestScope, id int) (*models.Card, error) 
 		return nil, err
 	}
 
-	err = s.dao.Delete(rs, id)
+	err = s.dao.DeleteCard(rs, card_id)
 
 	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
 		return nil, err
@@ -215,7 +233,7 @@ func (s *CardService) UpdateWalletLimits(rs app.RequestScope, walletId int) erro
 //Retorna a carteira que o cartão faz parte
 func GetWalletByCard(rs app.RequestScope, card *models.Card) (*models.Wallet, error) {
 	walletDao := daos.NewWalletDAO()
-	wallet, err := NewWalletService(walletDao).Get(rs, card.WalletId)
+	wallet, err := NewWalletService(walletDao).GetWallet(rs, card.WalletId)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +253,7 @@ func GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error)
 //Retorna a pessoa dona do cartão
 func GetPersonByWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Person, error) {
 	personDao := daos.NewPersonDAO()
-	person, err := NewPersonService(personDao).Get(rs, wallet.Id)
+	person, err := NewPersonService(personDao).GetPerson(rs, wallet.PersonId)
 	if err != nil {
 		return nil, err
 	}

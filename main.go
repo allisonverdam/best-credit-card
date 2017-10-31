@@ -1,11 +1,3 @@
-// @APIVersion 1.0.0
-// @APITitle Best Credit Card
-// @APIDescription Adiministre melhor os seus cartões de crédito, com nossa api você usará sempre o melhor cartão de crédito para a sua compra.
-// @Contact allisonverdam@gmail.com
-// @TermsOfServiceUrl http://google.com/
-// @License BSD
-// @LicenseUrl http://opensource.org/licenses/BSD-2-Clause
-// @BasePath http://host:port/api/
 package main
 
 import (
@@ -99,3 +91,20 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	return router
 }
+
+/**
+* @apiDefine AuthRequired
+* @apiHeaderExample {json} Headers:
+*     {
+*       "Authorization": "Bearer {{TOKEN}}",
+*		"Content-Type": "application/json"
+*     }
+**/
+
+/**
+* @apiDefine ContentTypeJson
+* @apiHeaderExample {json} Headers:
+*     {
+*		"Content-Type": "application/json"
+*     }
+**/

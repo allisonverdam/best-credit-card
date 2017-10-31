@@ -9,13 +9,13 @@ import (
 // personDAO specifies the interface of the person DAO needed by PersonService.
 type personDAO interface {
 	// Get returns the person with the specified person ID.
-	Get(rs app.RequestScope, id int) (*models.Person, error)
+	GetPerson(rs app.RequestScope, id int) (*models.Person, error)
 	// GetWithoutPassword returns the person with the specified person ID whithout password.
 	GetWithoutPassword(rs app.RequestScope, id int) (*models.Person, error)
-	// Update updates the person with given ID in the storage.
-	Update(rs app.RequestScope, id int, person *models.Person) error
+	// UpdatePerson updates the person with given ID in the storage.
+	UpdatePerson(rs app.RequestScope, id int, person *models.Person) error
 	// Create saves a new person in the storage.
-	Create(rs app.RequestScope, person *models.Person) error
+	CreatePerson(rs app.RequestScope, person *models.Person) error
 }
 
 // PersonService provides services related with persons.
@@ -29,7 +29,7 @@ func NewPersonService(dao personDAO) *PersonService {
 }
 
 // Get returns the person with the specified the person ID.
-func (s *PersonService) Get(rs app.RequestScope, id int) (*models.Person, error) {
+func (s *PersonService) GetPerson(rs app.RequestScope, id int) (*models.Person, error) {
 	person, err := s.dao.GetWithoutPassword(rs, id)
 	if err != nil {
 		return nil, err
@@ -50,9 +50,9 @@ func (s *PersonService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]mo
 	return wallets, nil
 }
 
-// Update updates the person with the specified ID.
-func (s *PersonService) Update(rs app.RequestScope, id int, person *models.Person) (*models.Person, error) {
-	if err := s.dao.Update(rs, id, person); err != nil {
+// UpdateAuthenticatedPerson updates the person with the specified ID.
+func (s *PersonService) UpdateAuthenticatedPerson(rs app.RequestScope, id int, person *models.Person) (*models.Person, error) {
+	if err := s.dao.UpdatePerson(rs, id, person); err != nil {
 		return nil, err
 	}
 	return s.dao.GetWithoutPassword(rs, id)

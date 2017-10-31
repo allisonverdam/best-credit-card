@@ -17,6 +17,16 @@ func InternalServerError(err error) *APIError {
 	return NewAPIError(http.StatusInternalServerError, "INTERNAL_SERVER_ERROR", Params{"error": err.Error()})
 }
 
+/**
+* @apiDefine NotFoundError
+* @apiError NotFound Recurso não encontrado.
+* @apiErrorExample NotFound:
+*     HTTP/1.1 404 Not Found
+*     {
+*	"error_code": "NOT_FOUND",
+*	"message": "the requested resource was not found."
+*     }
+ */
 // NotFound cria um novo erro representando o erro "resource-not-found" (HTTP 404)
 func NotFound(resource string) *APIError {
 	return NewAPIError(http.StatusNotFound, "NOT_FOUND", Params{"resource": resource})

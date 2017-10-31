@@ -11,14 +11,14 @@ import (
 
 // WalletDAO specifies the interface of the wallet DAO needed by WalletService.
 type WalletDAO interface {
-	// Get returns the wallet with the specified wallet ID.
-	Get(rs app.RequestScope, id int) (*models.Wallet, error)
-	// Create saves a new wallet in the storage.
-	Create(rs app.RequestScope, wallet *models.Wallet) error
-	// Update updates the wallet with given ID in the storage.
-	Update(rs app.RequestScope, id int, wallet *models.Wallet) error
-	// Delete removes the wallet with given ID from the storage.
-	Delete(rs app.RequestScope, id int) error
+	// GetWallet returns the wallet with the specified wallet ID.
+	GetWallet(rs app.RequestScope, card_id int) (*models.Wallet, error)
+	// CreateWallet saves a new wallet in the storage.
+	CreateWallet(rs app.RequestScope, wallet *models.Wallet) error
+	// UpdateWallet updates the wallet with given ID in the storage.
+	UpdateWallet(rs app.RequestScope, card_id int, wallet *models.Wallet) error
+	// DeleteWallet removes the wallet with given ID from the storage.
+	DeleteWallet(rs app.RequestScope, card_id int) error
 	//GetAuthenticatedPersonWallets return the wallets from authenticated person
 	GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error)
 }
@@ -33,9 +33,9 @@ func NewWalletService(dao WalletDAO) *WalletService {
 	return &WalletService{dao}
 }
 
-// Get returns the wallet with the specified the wallet ID.
-func (s *WalletService) Get(rs app.RequestScope, id int) (*models.Wallet, error) {
-	wallet, err := s.dao.Get(rs, id)
+// GetWallet returns the wallet with the specified the wallet ID.
+func (s *WalletService) GetWallet(rs app.RequestScope, card_id int) (*models.Wallet, error) {
+	wallet, err := s.dao.GetWallet(rs, card_id)
 	if err != nil {
 		return nil, err
 	}
@@ -52,28 +52,28 @@ func (s *WalletService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]mo
 	return s.dao.GetAuthenticatedPersonWallets(rs, rs.UserID())
 }
 
-// Create creates a new wallet.
-func (s *WalletService) Create(rs app.RequestScope, wallet *models.Wallet) (*models.Wallet, error) {
+// CreateWallet creates a new wallet.
+func (s *WalletService) CreateWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Wallet, error) {
 	if err := wallet.Validate(); err != nil {
 		return nil, err
 	}
 
 	if rs.UserID() != 0 {
-		//Verifica se o id da pessoa é igual o da que está autenticada
+		//Verifica se o card_id da pessoa é igual o da que está autenticada
 		err := VerifyPersonOwner(rs, wallet.PersonId, "person_id")
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if err := s.dao.Create(rs, wallet); err != nil {
+	if err := s.dao.CreateWallet(rs, wallet); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, wallet.Id)
+	return s.dao.GetWallet(rs, wallet.Id)
 }
 
-// Update updates the wallet with the specified ID.
-func (s *WalletService) Update(rs app.RequestScope, id int, wallet *models.Wallet) (*models.Wallet, error) {
+// UpdateWallet updates the wallet with the specified ID.
+func (s *WalletService) UpdateWallet(rs app.RequestScope, card_id int, wallet *models.Wallet) (*models.Wallet, error) {
 	if err := wallet.Validate(); err != nil {
 		return nil, err
 	}
@@ -99,15 +99,15 @@ func (s *WalletService) Update(rs app.RequestScope, id int, wallet *models.Walle
 		wallet.AvaliableLimit = card.AvaliableLimit - wallet.CurrentLimit
 	}
 
-	if err := s.dao.Update(rs, id, wallet); err != nil {
+	if err := s.dao.UpdateWallet(rs, card_id, wallet); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, id)
+	return s.dao.GetWallet(rs, card_id)
 }
 
-// Delete deletes the wallet with the specified ID.
-func (s *WalletService) Delete(rs app.RequestScope, id int) (*models.Wallet, error) {
-	wallet, err := s.dao.Get(rs, id)
+// DeleteWallet deletes the wallet with the specified ID.
+func (s *WalletService) DeleteWallet(rs app.RequestScope, card_id int) (*models.Wallet, error) {
+	wallet, err := s.dao.GetWallet(rs, card_id)
 	if err != nil {
 		return nil, err
 	}
@@ -118,12 +118,12 @@ func (s *WalletService) Delete(rs app.RequestScope, id int) (*models.Wallet, err
 		return nil, err
 	}
 
-	err = s.dao.Delete(rs, id)
+	err = s.dao.DeleteWallet(rs, card_id)
 	return wallet, err
 }
 
 func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card) error {
-	wallet, err := s.Get(rs, card.WalletId)
+	wallet, err := s.GetWallet(rs, card.WalletId)
 	if err != nil {
 		return err
 	}
@@ -137,5 +137,5 @@ func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card
 	wallet.MaximumLimit = card.AvaliableLimit
 	wallet.AvaliableLimit = card.AvaliableLimit - wallet.CurrentLimit
 
-	return s.dao.Update(rs, card.WalletId, wallet)
+	return s.dao.UpdateWallet(rs, card.WalletId, wallet)
 }

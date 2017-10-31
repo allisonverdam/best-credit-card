@@ -1,10 +1,7 @@
 package daos
 
 import (
-	"net/http"
-
 	"github.com/allisonverdam/best-credit-card/app"
-	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/allisonverdam/best-credit-card/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
@@ -17,28 +14,16 @@ func NewCardDAO() *CardDAO {
 	return &CardDAO{}
 }
 
-// Get retorna um cartão com id específico.
-func (dao *CardDAO) Get(rs app.RequestScope, id int) (*models.Card, error) {
+// GetCard retorna um cartão com id específico.
+func (dao *CardDAO) GetCard(rs app.RequestScope, id int) (*models.Card, error) {
 	card := models.Card{}
 	err := rs.Tx().Select().Model(id, &card)
 	return &card, err
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
-func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
+func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, personId int, wallet models.Wallet) ([]models.Card, error) {
 	cards := []models.Card{}
-	wallet := models.Wallet{}
-
-	//verifica se a carteira existe
-	errWallet := rs.Tx().Select().Where(dbx.HashExp{"id": walletId}).One(&wallet)
-	if errWallet != nil {
-		return nil, errWallet
-	}
-
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	if *&wallet.PersonId != personId {
-		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to this user.", "developer_message": ""})
-	}
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
 	//caso tenha cartões com o cc_due_date igual retorna o com menor limite primeiro
@@ -50,18 +35,8 @@ func (dao *CardDAO) GetBestCardsByWalletId(rs app.RequestScope, personId int, wa
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
-func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error) {
+func (dao *CardDAO) GetCardsByWallet(rs app.RequestScope, personId int, wallet models.Wallet) ([]models.Card, error) {
 	cards := []models.Card{}
-	wallet := models.Wallet{}
-
-	errWallet := rs.Tx().Select().Where(dbx.HashExp{"id": walletId}).One(&wallet)
-	if errWallet != nil {
-		return nil, errWallet
-	}
-
-	if *&wallet.PersonId != personId {
-		return nil, errors.NewAPIError(http.StatusForbidden, "FORBIDDEN", errors.Params{"message": "This wallet does not belong to the authenticated user.", "developer_message": ""})
-	}
 
 	errQuery := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
 	if errQuery != nil {
@@ -72,13 +47,13 @@ func (dao *CardDAO) GetCardsByWalletId(rs app.RequestScope, personId int, wallet
 }
 
 // Create salva um novo cartão.
-func (dao *CardDAO) Create(rs app.RequestScope, card *models.Card) error {
+func (dao *CardDAO) CreateCard(rs app.RequestScope, card *models.Card) error {
 	return rs.Tx().Model(card).Insert()
 }
 
-// Update atualiza os dados de um catrão com id específico.
-func (dao *CardDAO) Update(rs app.RequestScope, id int, card *models.Card) error {
-	if _, err := dao.Get(rs, id); err != nil {
+// UpdateCard atualiza os dados de um catrão com id específico.
+func (dao *CardDAO) UpdateCard(rs app.RequestScope, id int, card *models.Card) error {
+	if _, err := dao.GetCard(rs, id); err != nil {
 		return err
 	}
 	card.Id = id
@@ -86,9 +61,9 @@ func (dao *CardDAO) Update(rs app.RequestScope, id int, card *models.Card) error
 }
 
 // Query retrieves the card records with the specified offset and limit from the database.
-// Delete deleta um cartão com id específico.
-func (dao *CardDAO) Delete(rs app.RequestScope, id int) error {
-	card, err := dao.Get(rs, id)
+// DeleteCard deleta um cartão com id específico.
+func (dao *CardDAO) DeleteCard(rs app.RequestScope, id int) error {
+	card, err := dao.GetCard(rs, id)
 	if err != nil {
 		return err
 	}

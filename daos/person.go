@@ -16,7 +16,7 @@ func NewPersonDAO() *PersonDAO {
 }
 
 // Get reads the person with the specified ID from the database.
-func (dao *PersonDAO) Get(rs app.RequestScope, id int) (*models.Person, error) {
+func (dao *PersonDAO) GetPerson(rs app.RequestScope, id int) (*models.Person, error) {
 	person := models.Person{}
 	err := rs.Tx().Select().Model(id, &person)
 
@@ -46,8 +46,8 @@ func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) 
 	return &person, nil
 }
 
-// Create saves a new person record in the database.
-func (dao *PersonDAO) Create(rs app.RequestScope, person *models.Person) error {
+// CreatePerson saves a new person record in the database.
+func (dao *PersonDAO) CreatePerson(rs app.RequestScope, person *models.Person) error {
 	err := person.Validate()
 	if err != nil {
 		return err
@@ -58,9 +58,9 @@ func (dao *PersonDAO) Create(rs app.RequestScope, person *models.Person) error {
 	return rs.Tx().Model(person).Insert()
 }
 
-// Update saves the changes to an person in the database.
-func (dao *PersonDAO) Update(rs app.RequestScope, id int, person *models.Person) error {
-	oldPerson, err := dao.Get(rs, id)
+// UpdatePerson saves the changes to an person in the database.
+func (dao *PersonDAO) UpdatePerson(rs app.RequestScope, id int, person *models.Person) error {
+	oldPerson, err := dao.GetPerson(rs, id)
 	if err != nil {
 		return err
 	}
@@ -79,9 +79,9 @@ func (dao *PersonDAO) Update(rs app.RequestScope, id int, person *models.Person)
 	return rs.Tx().Model(person).Exclude("Id").Update()
 }
 
-// Delete deletes an person with the specified ID from the database.
-func (dao *PersonDAO) Delete(rs app.RequestScope, id int) error {
-	person, err := dao.Get(rs, id)
+// DeletePerson deletes an person with the specified ID from the database.
+func (dao *PersonDAO) DeletePerson(rs app.RequestScope, id int) error {
+	person, err := dao.GetPerson(rs, id)
 	if err != nil {
 		return err
 	}
