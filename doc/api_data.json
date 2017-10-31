@@ -25,7 +25,7 @@
         }
       ]
     },
-    "filename": "./api-doc/auth-doc.js",
+    "filename": "./controllers/auth.go",
     "groupTitle": "Auth",
     "header": {
       "examples": [
@@ -82,7 +82,7 @@
         }
       ]
     },
-    "filename": "./api-doc/auth-doc.js",
+    "filename": "./controllers/auth.go",
     "groupTitle": "Auth",
     "header": {
       "examples": [
@@ -150,7 +150,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -163,7 +163,7 @@
     }
   },
   {
-    "type": "delete",
+    "type": "DeleteCard",
     "url": "/cards/:card_id",
     "title": "DeleteCard",
     "version": "1.0.0",
@@ -209,7 +209,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -288,7 +288,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -301,7 +301,7 @@
     }
   },
   {
-    "type": "get",
+    "type": "GetCard",
     "url": "/cards/:card_id",
     "title": "GetCard",
     "version": "1.0.0",
@@ -347,7 +347,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -406,7 +406,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -485,7 +485,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -553,7 +553,7 @@
         }
       ]
     },
-    "filename": "./api-doc/card-doc.js",
+    "filename": "./controllers/card.go",
     "groupTitle": "Card",
     "header": {
       "examples": [
@@ -568,9 +568,9 @@
   {
     "type": "get",
     "url": "/me",
-    "title": "GetAuthenticatedUser",
+    "title": "GetAuthenticatedPerson",
     "version": "1.0.0",
-    "name": "GetAuthenticatedUser",
+    "name": "GetAuthenticatedPerson",
     "description": "<p>Retorna o usuário autenticado.</p>",
     "group": "Person",
     "success": {
@@ -582,7 +582,7 @@
         }
       ]
     },
-    "filename": "./api-doc/person-doc.js",
+    "filename": "./controllers/person.go",
     "groupTitle": "Person",
     "header": {
       "examples": [
@@ -597,9 +597,9 @@
   {
     "type": "get",
     "url": "/me/wallets",
-    "title": "GetAuthenticatedUserWallets",
+    "title": "GetAuthenticatedPersonWallets",
     "version": "1.0.0",
-    "name": "GetAuthenticatedUserWallets",
+    "name": "GetAuthenticatedPersonWallets",
     "description": "<p>Retorna as carteiras do usuário autenticado.</p>",
     "group": "Person",
     "success": {
@@ -611,7 +611,7 @@
         }
       ]
     },
-    "filename": "./api-doc/person-doc.js",
+    "filename": "./controllers/person.go",
     "groupTitle": "Person",
     "header": {
       "examples": [
@@ -626,9 +626,9 @@
   {
     "type": "put",
     "url": "/me",
-    "title": "UpdateAuthenticatedUser",
+    "title": "UpdateAuthenticatedPerson",
     "version": "1.0.0",
-    "name": "UpdateGetAuthenticatedUserWallets",
+    "name": "UpdateAuthenticatedPerson",
     "description": "<p>Atualiza o usuário autenticado.</p>",
     "group": "Person",
     "parameter": {
@@ -649,7 +649,7 @@
         }
       ]
     },
-    "filename": "./api-doc/person-doc.js",
+    "filename": "./controllers/person.go",
     "groupTitle": "Person",
     "header": {
       "examples": [
@@ -678,7 +678,7 @@
         }
       ]
     },
-    "filename": "./api-doc/wallet-doc.js",
+    "filename": "./controllers/wallet.go",
     "groupTitle": "Wallet",
     "header": {
       "examples": [
@@ -737,7 +737,7 @@
         }
       ]
     },
-    "filename": "./api-doc/wallet-doc.js",
+    "filename": "./controllers/wallet.go",
     "groupTitle": "Wallet",
     "header": {
       "examples": [
@@ -796,7 +796,7 @@
         }
       ]
     },
-    "filename": "./api-doc/wallet-doc.js",
+    "filename": "./controllers/wallet.go",
     "groupTitle": "Wallet",
     "header": {
       "examples": [
@@ -864,7 +864,7 @@
         }
       ]
     },
-    "filename": "./api-doc/wallet-doc.js",
+    "filename": "./controllers/wallet.go",
     "groupTitle": "Wallet",
     "header": {
       "examples": [
