@@ -51,18 +51,19 @@ func TestCreateWallet(t *testing.T) {
 	})
 }
 
-func TestCreateWalletWithErrorPersonNull(t *testing.T) {
+func TestCreateWalletWithErrorPersonNotFound(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewWalletDAO()
 
 	testDBCall(db, func(rs app.RequestScope) {
 		wallet := &models.Wallet{
+			PersonId:     53,
 			MaximumLimit: 500,
 			CurrentLimit: 200,
 		}
 		err := dao.CreateWallet(rs, wallet)
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "person_id: cannot be blank.", err.Error())
+			assert.Equal(t, "pq: insert or update on table \"wallet\" violates foreign key constraint \"wallet_person_id_fkey\"", err.Error())
 		}
 	})
 }
@@ -100,7 +101,7 @@ func TestUpdateWalletWithErrorNotExistWalletWithThisID(t *testing.T) {
 	})
 }
 
-func TestUpdateWalletWithErrorPersonIdISNull(t *testing.T) {
+func TestUpdateWalletWithErrorWalletNotExist(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewWalletDAO()
 
@@ -111,7 +112,7 @@ func TestUpdateWalletWithErrorPersonIdISNull(t *testing.T) {
 		}
 		err := dao.UpdateWallet(rs, wallet.Id, wallet)
 		assert.NotNil(t, err)
-		assert.Equal(t, "person_id: cannot be blank.", err.Error())
+		assert.Equal(t, "sql: no rows in result set", err.Error())
 	})
 }
 

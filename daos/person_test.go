@@ -99,24 +99,6 @@ func TestCreatePerson(t *testing.T) {
 
 }
 
-func TestCreatePersonWithErrorEmailBlank(t *testing.T) {
-	db := testdata.ResetDB()
-	dao := NewPersonDAO()
-
-	testDBCall(db, func(rs app.RequestScope) {
-		person := &models.Person{
-			Id:       1000,
-			Name:     "Josh",
-			Password: "12345678",
-			Username: "josh123",
-		}
-		err := dao.CreatePerson(rs, person)
-		assert.NotNil(t, err)
-		assert.Equal(t, "email: cannot be blank.", err.Error())
-	})
-
-}
-
 func TestUpdatePerson(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewPersonDAO()

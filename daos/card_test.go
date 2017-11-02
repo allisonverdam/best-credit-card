@@ -83,6 +83,7 @@ func TestCreateCard(t *testing.T) {
 			CVV:             123,
 			DueDate:         22,
 			ExpirationMonth: 01,
+			Currency:        "BRL",
 			ExpirationYear:  17,
 			WalletId:        1,
 		}
