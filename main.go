@@ -58,6 +58,13 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 		return c.Write("pong!")
 	})
 
+	/**
+	* @apiDefine ContentTypeJson
+	* @apiHeaderExample {json} Headers:
+	*     {
+	*		"Content-Type": "application/json"
+	*     }
+	**/
 	router.Use(
 		app.Init(logger),
 		content.TypeNegotiator(content.JSON),
@@ -71,6 +78,14 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	rg := router.Group("/v1")
 
+	/**
+	* @apiDefine AuthRequired
+	* @apiHeaderExample {json} Headers:
+	*     {
+	*       "Authorization": "Bearer {{TOKEN}}",
+	*		"Content-Type": "application/json"
+	*     }
+	**/
 	//Fazendo as requisições desse group passarem pelo middleware de auth
 	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
 		TokenHandler: services.JWTHandler,
@@ -91,20 +106,3 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	return router
 }
-
-/**
-* @apiDefine AuthRequired
-* @apiHeaderExample {json} Headers:
-*     {
-*       "Authorization": "Bearer {{TOKEN}}",
-*		"Content-Type": "application/json"
-*     }
-**/
-
-/**
-* @apiDefine ContentTypeJson
-* @apiHeaderExample {json} Headers:
-*     {
-*		"Content-Type": "application/json"
-*     }
-**/
