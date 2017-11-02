@@ -48,6 +48,17 @@ func (s *WalletService) GetWallet(rs app.RequestScope, card_id int) (*models.Wal
 	return wallet, nil
 }
 
+// GetWalletThrowVerification retorna a wallet que esse cartão faz parte.
+// Deixa a verificação para ser feita onde esse metodo for invocado
+func (s *WalletService) GetWalletThrowVerification(rs app.RequestScope, card_id int) (*models.Wallet, error) {
+	wallet, err := s.dao.GetWallet(rs, card_id)
+	if err != nil {
+		return nil, err
+	}
+
+	return wallet, nil
+}
+
 func (s *WalletService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
 	return s.dao.GetAuthenticatedPersonWallets(rs, rs.UserID())
 }
