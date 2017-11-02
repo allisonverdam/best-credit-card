@@ -12,8 +12,8 @@ type (
 	// cardService especifica a interface que é utilizada pelo cardResource
 	cardService interface {
 		GetCard(rs app.RequestScope, card_id int) (*models.Card, error)
-		GetBestCards(rs app.RequestScope, personId int, order *models.Order) ([]models.Card, error)
-		GetCardsByWalletId(rs app.RequestScope, personId int, walletId int) ([]models.Card, error)
+		GetBestCards(rs app.RequestScope, order *models.Order) (*[]models.Card, error)
+		GetCardsByWalletId(rs app.RequestScope, walletId int) (*[]models.Card, error)
 		PayCreditCard(rs app.RequestScope, order models.Order) (*models.Card, error)
 		CreateCard(rs app.RequestScope, card *models.Card) (*models.Card, error)
 		UpdateCard(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error)
@@ -92,7 +92,7 @@ func (r *cardResource) GetBestCards(c *routing.Context) error {
 		return err
 	}
 
-	card, err := r.service.GetBestCards(app.GetRequestScope(c), app.GetRequestScope(c).UserID(), &order)
+	card, err := r.service.GetBestCards(app.GetRequestScope(c), &order)
 	if err != nil {
 		return err
 	}
@@ -243,7 +243,7 @@ func (r *cardResource) GetWalletCards(c *routing.Context) error {
 
 	rs := app.GetRequestScope(c)
 
-	cards, err := r.service.GetCardsByWalletId(rs, rs.UserID(), wallet_id)
+	cards, err := r.service.GetCardsByWalletId(rs, wallet_id)
 	if err != nil {
 		return err
 	}

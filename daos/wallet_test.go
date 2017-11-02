@@ -14,7 +14,7 @@ func TestGetWallet(t *testing.T) {
 	dao := NewWalletDAO()
 
 	testDBCall(db, func(rs app.RequestScope) {
-		wallet, err := dao.Get(rs, 1)
+		wallet, err := dao.GetWallet(rs, 1)
 		assert.Nil(t, err)
 		if assert.NotNil(t, wallet) {
 			assert.Equal(t, 1, wallet.Id)
@@ -45,7 +45,7 @@ func TestCreateWallet(t *testing.T) {
 			CurrentLimit: 200,
 			PersonId:     1,
 		}
-		err := dao.Create(rs, wallet)
+		err := dao.CreateWallet(rs, wallet)
 		assert.Nil(t, err)
 		assert.NotZero(t, wallet.Id)
 	})
@@ -60,7 +60,7 @@ func TestCreateWalletWithErrorPersonNull(t *testing.T) {
 			MaximumLimit: 500,
 			CurrentLimit: 200,
 		}
-		err := dao.Create(rs, wallet)
+		err := dao.CreateWallet(rs, wallet)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "person_id: cannot be blank.", err.Error())
 		}
@@ -78,7 +78,7 @@ func TestUpdateWallet(t *testing.T) {
 			MaximumLimit: 200,
 			PersonId:     1,
 		}
-		err := dao.Update(rs, wallet.Id, wallet)
+		err := dao.UpdateWallet(rs, wallet.Id, wallet)
 		assert.Nil(t, err)
 	})
 }
@@ -93,44 +93,44 @@ func TestUpdateWalletWithErrorNotExistWalletWithThisID(t *testing.T) {
 			CurrentLimit: 22,
 			PersonId:     1,
 		}
-		err := dao.Update(rs, 99, wallet)
+		err := dao.UpdateWallet(rs, 99, wallet)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "sql: no rows in result set", err.Error())
 		}
 	})
 }
 
-func TestWalletDAO(t *testing.T) {
+func TestUpdateWalletWithErrorPersonIdISNull(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewWalletDAO()
 
-	{
-		// Update with error
-		//"person_id: cannot be blank."
-		testDBCall(db, func(rs app.RequestScope) {
-			wallet := &models.Wallet{
-				Id:           0,
-				MaximumLimit: 42,
-			}
-			err := dao.Update(rs, wallet.Id, wallet)
-			assert.NotNil(t, err)
-			assert.Equal(t, "person_id: cannot be blank.", err.Error())
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		wallet := &models.Wallet{
+			Id:           0,
+			MaximumLimit: 42,
+		}
+		err := dao.UpdateWallet(rs, wallet.Id, wallet)
+		assert.NotNil(t, err)
+		assert.Equal(t, "person_id: cannot be blank.", err.Error())
+	})
+}
 
-	{
-		// Delete
-		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 1)
-			assert.Nil(t, err)
-		})
-	}
+func TestDeleteWallet(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewWalletDAO()
 
-	{
-		// Delete with error
-		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 99999)
-			assert.NotNil(t, err)
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		err := dao.DeleteWallet(rs, 1)
+		assert.Nil(t, err)
+	})
+}
+
+func TestDeleteWalletWithErrorWalletNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewWalletDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		err := dao.DeleteWallet(rs, 99999)
+		assert.NotNil(t, err)
+	})
 }

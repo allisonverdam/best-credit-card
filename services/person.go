@@ -10,8 +10,8 @@ import (
 type personDAO interface {
 	// Get returns the person with the specified person ID.
 	GetPerson(rs app.RequestScope, id int) (*models.Person, error)
-	// GetWithoutPassword returns the person with the specified person ID whithout password.
-	GetWithoutPassword(rs app.RequestScope, id int) (*models.Person, error)
+	// GetPersonWithoutPassword returns the person with the specified person ID whithout password.
+	GetPersonWithoutPassword(rs app.RequestScope, id int) (*models.Person, error)
 	// UpdatePerson updates the person with given ID in the storage.
 	UpdatePerson(rs app.RequestScope, id int, person *models.Person) error
 	// Create saves a new person in the storage.
@@ -30,7 +30,7 @@ func NewPersonService(dao personDAO) *PersonService {
 
 // Get returns the person with the specified the person ID.
 func (s *PersonService) GetPerson(rs app.RequestScope, id int) (*models.Person, error) {
-	person, err := s.dao.GetWithoutPassword(rs, id)
+	person, err := s.dao.GetPersonWithoutPassword(rs, id)
 	if err != nil {
 		return nil, err
 	}
@@ -55,5 +55,5 @@ func (s *PersonService) UpdateAuthenticatedPerson(rs app.RequestScope, id int, p
 	if err := s.dao.UpdatePerson(rs, id, person); err != nil {
 		return nil, err
 	}
-	return s.dao.GetWithoutPassword(rs, id)
+	return s.dao.GetPersonWithoutPassword(rs, id)
 }

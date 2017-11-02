@@ -9,155 +9,140 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCardDAO(t *testing.T) {
+func TestGetWalletCardsLimits(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewCardDAO()
 
-	{
-		// Get
-		testDBCall(db, func(rs app.RequestScope) {
-			card, err := dao.Get(rs, 2)
-			assert.Nil(t, err)
-			if assert.NotNil(t, card) {
-				assert.Equal(t, 2, card.Id)
-			}
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		card, err := dao.GetWalletCardsLimits(rs, 2)
+		assert.Nil(t, err)
+		if assert.NotNil(t, card) {
+			assert.Equal(t, 1430.0, card.AvaliableLimit)
+			assert.Equal(t, 1800.0, card.RealLimit)
+		}
+	})
+}
 
-	{
-		// GetBestCardsByWalletId
-		testDBCall(db, func(rs app.RequestScope) {
-			personId := 1
-			walletId := 1
-			cards, err := dao.GetBestCardsByWalletId(rs, personId, walletId)
-			assert.Nil(t, err)
-			if assert.NotNil(t, cards) {
-				assert.Equal(t, 3, len(cards))
-			}
-		})
-	}
+func TestGetCard(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
 
-	{
-		// GetBestCardsByWalletId with error
-		//wallet not belong to person
-		testDBCall(db, func(rs app.RequestScope) {
-			personId := 1
-			walletId := 2
-			card, err := dao.GetBestCardsByWalletId(rs, personId, walletId)
-			assert.Nil(t, card)
-			assert.Equal(t, "FORBIDDEN", err.Error())
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		card, err := dao.GetCard(rs, 2)
+		assert.Nil(t, err)
+		if assert.NotNil(t, card) {
+			assert.Equal(t, 2, card.Id)
+		}
+	})
+}
 
-	{
-		// GetCardsByWalletId with error
-		//wallet not exist
-		testDBCall(db, func(rs app.RequestScope) {
-			personId := 1
-			walletId := 0
-			card, err := dao.GetBestCardsByWalletId(rs, personId, walletId)
-			assert.Nil(t, card)
+func TestGetCardsByWallet(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		wallet := models.Wallet{}
+		wallet.PersonId = 1
+		wallet.Id = 1
+
+		cards, err := dao.GetCardsByWallet(rs, wallet)
+		assert.Nil(t, err)
+		if assert.NotNil(t, cards) {
+			assert.Equal(t, 3, len(*cards))
+		}
+	})
+}
+
+func TestGetBestCardsByWallet(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		wallet := models.Wallet{}
+		wallet.PersonId = 1
+		wallet.Id = 1
+
+		cards, err := dao.GetBestCardsByWallet(rs, wallet)
+		assert.Nil(t, err)
+		if assert.NotNil(t, cards) {
+			assert.Equal(t, 3, len(*cards))
+		}
+	})
+}
+
+func TestCreateCard(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		card := &models.Card{
+			Id:              1000,
+			Number:          "1234123412341299",
+			RealLimit:       100,
+			AvaliableLimit:  50,
+			CVV:             123,
+			DueDate:         22,
+			ExpirationMonth: 01,
+			ExpirationYear:  17,
+			WalletId:        1,
+		}
+		err := dao.CreateCard(rs, card)
+		assert.Nil(t, err)
+		assert.Equal(t, 1000, card.Id)
+		assert.NotZero(t, card.Id)
+	})
+}
+
+func TestUpdateCard(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		card := &models.Card{
+			Id:       2,
+			Number:   "1234123412341298",
+			WalletId: 1,
+		}
+		err := dao.UpdateCard(rs, card.Id, card)
+		assert.Nil(t, err)
+	})
+}
+
+func TestUpdateCardWithErrorCardNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		card := &models.Card{
+			Id:       0,
+			Number:   "1234123412341297",
+			WalletId: 1,
+		}
+		err := dao.UpdateCard(rs, card.Id, card)
+		if assert.NotNil(t, err) {
 			assert.Equal(t, "sql: no rows in result set", err.Error())
-		})
-	}
+		}
+	})
+}
 
-	{
-		// GetCardsByWalletId
-		testDBCall(db, func(rs app.RequestScope) {
-			personId := 1
-			walletId := 1
-			cards, err := dao.GetCardsByWalletId(rs, personId, walletId)
-			assert.Nil(t, err)
-			if assert.NotNil(t, cards) {
-				assert.Equal(t, 3, len(cards))
-			}
-		})
-	}
+func TestDeleteCard(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
 
-	{
-		// GetCardsByWalletId with error
-		//wallet not belong to person
-		testDBCall(db, func(rs app.RequestScope) {
-			personId := 1
-			walletId := 2
-			card, err := dao.GetCardsByWalletId(rs, personId, walletId)
-			assert.Nil(t, card)
-			assert.Equal(t, "FORBIDDEN", err.Error())
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		err := dao.DeleteCard(rs, 2)
+		assert.Nil(t, err)
+	})
+}
 
-	{
-		// GetCardsByWalletId with error
-		//wallet not exist
-		testDBCall(db, func(rs app.RequestScope) {
-			personId := 1
-			walletId := 0
-			card, err := dao.GetCardsByWalletId(rs, personId, walletId)
-			assert.Nil(t, card)
+func TestDeleteCardWithErrorCardNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewCardDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		err := dao.DeleteCard(rs, 99999)
+		if assert.NotNil(t, err) {
 			assert.Equal(t, "sql: no rows in result set", err.Error())
-		})
-	}
-
-	{
-		// Create
-		testDBCall(db, func(rs app.RequestScope) {
-			card := &models.Card{
-				Id:              1000,
-				Number:          "1234123412341299",
-				RealLimit:       100,
-				AvaliableLimit:  50,
-				CVV:             123,
-				DueDate:         22,
-				ExpirationMonth: 01,
-				ExpirationYear:  17,
-				WalletId:        1,
-			}
-			err := dao.Create(rs, card)
-			assert.Nil(t, err)
-			assert.Equal(t, 1000, card.Id)
-			assert.NotZero(t, card.Id)
-		})
-	}
-
-	{
-		// Update
-		testDBCall(db, func(rs app.RequestScope) {
-			card := &models.Card{
-				Id:       2,
-				Number:   "1234123412341298",
-				WalletId: 1,
-			}
-			err := dao.Update(rs, card.Id, card)
-			assert.Nil(t, err)
-		})
-	}
-
-	{
-		// Update with error
-		testDBCall(db, func(rs app.RequestScope) {
-			card := &models.Card{
-				Id:       2,
-				Number:   "1234123412341297",
-				WalletId: 1,
-			}
-			err := dao.Update(rs, 0, card)
-			assert.NotNil(t, err)
-		})
-	}
-
-	{
-		// Delete
-		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 2)
-			assert.Nil(t, err)
-		})
-	}
-
-	{
-		// Delete with error
-		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 99999)
-			assert.NotNil(t, err)
-		})
-	}
+		}
+	})
 }

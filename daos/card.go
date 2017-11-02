@@ -17,12 +17,14 @@ func NewCardDAO() *CardDAO {
 // GetCard retorna um cartão com id específico.
 func (dao *CardDAO) GetCard(rs app.RequestScope, id int) (*models.Card, error) {
 	card := models.Card{}
-	err := rs.Tx().Select().Model(id, &card)
-	return &card, err
+	if err := rs.Tx().Select().Model(id, &card); err != nil {
+		return nil, err
+	}
+	return &card, nil
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
-func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, personId int, wallet models.Wallet) ([]models.Card, error) {
+func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error) {
 	cards := []models.Card{}
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
@@ -31,19 +33,18 @@ func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, personId int, wall
 		return nil, err
 	}
 
-	return cards, nil
+	return &cards, nil
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
-func (dao *CardDAO) GetCardsByWallet(rs app.RequestScope, personId int, wallet models.Wallet) ([]models.Card, error) {
+func (dao *CardDAO) GetCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error) {
 	cards := []models.Card{}
 
-	errQuery := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": &wallet.Id}).All(&cards)
-	if errQuery != nil {
-		return nil, errQuery
+	if err := rs.Tx().Select().Where(dbx.HashExp{"wallet_id": wallet.Id}).All(&cards); err != nil {
+		return nil, err
 	}
 
-	return cards, nil
+	return &cards, nil
 }
 
 // Create salva um novo cartão.
@@ -74,9 +75,8 @@ func (dao *CardDAO) DeleteCard(rs app.RequestScope, id int) error {
 func (dao *CardDAO) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
 	card := models.Card{}
 
-	errQuery := rs.Tx().Select("COALESCE(SUM(cc_real_limit), 0) cc_real_limit, COALESCE(SUM(cc_avaliable_limit), 0) cc_avaliable_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card)
-	if errQuery != nil {
-		return nil, errQuery
+	if err := rs.Tx().Select("COALESCE(SUM(cc_real_limit), 0) cc_real_limit, COALESCE(SUM(cc_avaliable_limit), 0) cc_avaliable_limit").Where(dbx.HashExp{"wallet_id": walletId}).One(&card); err != nil {
+		return nil, err
 	}
 
 	//Adicionando wallet_id ao objeto, porque não vinha na query

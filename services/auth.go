@@ -33,7 +33,7 @@ func (s *AuthService) Register(rs app.RequestScope, person *models.Person) (*mod
 		return nil, err
 	}
 
-	personDB, err := s.dao.GetWithoutPassword(rs, person.Id)
+	personDB, err := s.dao.GetPersonWithoutPassword(rs, person.Id)
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,7 @@ func (dao *PersonDAO) GetPerson(rs app.RequestScope, id int) (*models.Person, er
 }
 
 // Get reads the person with the specified ID from the database.
-func (dao *PersonDAO) GetWithoutPassword(rs app.RequestScope, id int) (*models.Person, error) {
+func (dao *PersonDAO) GetPersonWithoutPassword(rs app.RequestScope, id int) (*models.Person, error) {
 	person := models.Person{}
 	err := rs.Tx().Select().Model(id, &person)
 	if err != nil {
@@ -69,11 +69,6 @@ func (dao *PersonDAO) UpdatePerson(rs app.RequestScope, id int, person *models.P
 		person.Password = *&oldPerson.Password
 	} else {
 		person.Password = EncryptPassword(person.Password)
-	}
-
-	errValidate := person.Validate()
-	if errValidate != nil {
-		return errValidate
 	}
 
 	return rs.Tx().Model(person).Exclude("Id").Update()

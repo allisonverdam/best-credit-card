@@ -9,154 +9,187 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPersonDAO(t *testing.T) {
+func TestGetPerson(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := NewPersonDAO()
 
-	{
-		// Get
-		testDBCall(db, func(rs app.RequestScope) {
-			person, err := dao.Get(rs, 2)
-			assert.Nil(t, err)
-			if assert.NotNil(t, person) {
-				assert.Equal(t, 2, person.Id)
-			}
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		person, err := dao.GetPerson(rs, 2)
+		assert.Nil(t, err)
+		if assert.NotNil(t, person) {
+			assert.Equal(t, 2, person.Id)
+		}
+	})
 
-	{
-		// GetWithoutPassword
-		testDBCall(db, func(rs app.RequestScope) {
-			person, err := dao.GetWithoutPassword(rs, 2)
-			assert.Nil(t, err)
-			if assert.NotNil(t, person) {
-				assert.Equal(t, "", person.Password)
-			}
-		})
-	}
+}
 
-	{
-		// GetPersonByUserName
-		testDBCall(db, func(rs app.RequestScope) {
-			person, err := dao.GetPersonByUserName(rs, "allisonverdam")
-			assert.Nil(t, err)
-			if assert.NotNil(t, person) {
-				assert.Equal(t, 1, person.Id)
-			}
-		})
-	}
+func TestGetPersonWithoutPassword(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
 
-	{
-		// GetPersonByUserName with error
-		testDBCall(db, func(rs app.RequestScope) {
-			person, err := dao.GetPersonByUserName(rs, "xaxax2112")
-			assert.Nil(t, person)
-			if assert.NotNil(t, err) {
-				assert.Equal(t, "sql: no rows in result set", err.Error())
-			}
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		person, err := dao.GetPersonWithoutPassword(rs, 2)
+		assert.Nil(t, err)
+		if assert.NotNil(t, person) {
+			assert.Equal(t, "", person.Password)
+		}
+	})
 
-	{
-		// Create
-		testDBCall(db, func(rs app.RequestScope) {
-			person := &models.Person{
-				Id:       1000,
-				Email:    "josh@gmail.com",
-				Name:     "Josh",
-				Password: "12345678",
-				Username: "josh123",
-			}
-			err := dao.Create(rs, person)
-			assert.Nil(t, err)
-			assert.Equal(t, 1000, person.Id)
-			assert.NotZero(t, person.Id)
-		})
-	}
+}
 
-	{
-		// Create with error
-		testDBCall(db, func(rs app.RequestScope) {
-			person := &models.Person{
-				Id:       1000,
-				Name:     "Josh",
-				Password: "12345678",
-				Username: "josh123",
-			}
-			err := dao.Create(rs, person)
-			assert.NotNil(t, err)
-			assert.Equal(t, "email: cannot be blank.", err.Error())
-		})
-	}
+func TestGetPersonWithoutPasswordWithErrorPersonNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
 
-	{
-		// Update
-		testDBCall(db, func(rs app.RequestScope) {
-			person := &models.Person{
-				Id:       2,
-				Name:     "Carlos",
-				Email:    "carlos@g.com",
-				Password: "12345678",
-				Username: "carlos",
-			}
-			err := dao.Update(rs, person.Id, person)
-			assert.Nil(t, err)
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		person, err := dao.GetPersonWithoutPassword(rs, 9999)
+		assert.Nil(t, person)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
 
-	{
-		// Update with error
-		testDBCall(db, func(rs app.RequestScope) {
-			person := &models.Person{
-				Email:    "email.com",
-				Password: "12345678",
-			}
-			err := dao.Update(rs, 99999, person)
-			assert.NotNil(t, err)
-		})
-	}
+}
 
-	{
-		// Update with error
-		testDBCall(db, func(rs app.RequestScope) {
-			person := &models.Person{
-				Email:    "ana@g.com",
-				Name:     "Ana",
-				Password: "12345678",
-				Username: "ana123",
-			}
-			err := dao.Update(rs, 99999, person)
-			assert.NotNil(t, err)
-		})
-	}
+func TestGetPersonByUserName(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
 
-	{
-		// Update with error
-		// not passign password
-		testDBCall(db, func(rs app.RequestScope) {
-			person := &models.Person{
-				Email:    "ana@g.com",
-				Username: "ana123",
-				Password: "",
-			}
-			err := dao.Update(rs, 1, person)
-			assert.NotNil(t, err)
-		})
-	}
+	testDBCall(db, func(rs app.RequestScope) {
+		person, err := dao.GetPersonByUserName(rs, "allisonverdam")
+		assert.Nil(t, err)
+		if assert.NotNil(t, person) {
+			assert.Equal(t, 1, person.Id)
+		}
+	})
 
-	{
-		// Delete
-		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 2)
-			assert.Nil(t, err)
-		})
-	}
+}
 
-	{
-		// Delete with error
-		testDBCall(db, func(rs app.RequestScope) {
-			err := dao.Delete(rs, 99999)
-			assert.NotNil(t, err)
-		})
-	}
+func TestGetPersonByUserNameWithErrorUserNameNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		person, err := dao.GetPersonByUserName(rs, "xaxax2112")
+		assert.Nil(t, person)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
+
+}
+
+func TestCreatePerson(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		person := &models.Person{
+			Id:       1000,
+			Email:    "josh@gmail.com",
+			Name:     "Josh",
+			Password: "12345678",
+			Username: "josh123",
+		}
+		err := dao.CreatePerson(rs, person)
+		assert.Nil(t, err)
+		assert.Equal(t, 1000, person.Id)
+		assert.NotZero(t, person.Id)
+	})
+
+}
+
+func TestCreatePersonWithErrorEmailBlank(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		person := &models.Person{
+			Id:       1000,
+			Name:     "Josh",
+			Password: "12345678",
+			Username: "josh123",
+		}
+		err := dao.CreatePerson(rs, person)
+		assert.NotNil(t, err)
+		assert.Equal(t, "email: cannot be blank.", err.Error())
+	})
+
+}
+
+func TestUpdatePerson(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		person := &models.Person{
+			Id:       2,
+			Name:     "Carlos",
+			Email:    "carlos@g.com",
+			Password: "12345678",
+			Username: "carlos",
+		}
+		err := dao.UpdatePerson(rs, person.Id, person)
+		assert.Nil(t, err)
+	})
+
+}
+
+func TestUpdatePersonWithErrorPersonNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		person := &models.Person{
+			Id:       99999,
+			Email:    "email.com",
+			Password: "12345678",
+		}
+		err := dao.UpdatePerson(rs, person.Id, person)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
+
+}
+
+func TestUpdatePersonWithErrorUserNameDuplicated(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		person := &models.Person{
+			Id:       3,
+			Name:     "Ana",
+			Email:    "ana@g.com",
+			Username: "allisonverdam",
+		}
+		err := dao.UpdatePerson(rs, person.Id, person)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "pq: duplicate key value violates unique constraint \"person_username_key\"", err.Error())
+		}
+	})
+
+}
+
+func TestDeletePerson(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		err := dao.DeletePerson(rs, 2)
+		assert.Nil(t, err)
+	})
+
+}
+
+func TestDeletePersonWithErrorPersonNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := NewPersonDAO()
+
+	testDBCall(db, func(rs app.RequestScope) {
+		err := dao.DeletePerson(rs, 99999)
+		assert.NotNil(t, err)
+	})
+
 }
