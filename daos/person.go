@@ -48,11 +48,6 @@ func (dao *PersonDAO) GetPersonByUserName(rs app.RequestScope, username string) 
 
 // CreatePerson saves a new person record in the database.
 func (dao *PersonDAO) CreatePerson(rs app.RequestScope, person *models.Person) error {
-	err := person.Validate()
-	if err != nil {
-		return err
-	}
-
 	person.Password = EncryptPassword(person.Password)
 
 	return rs.Tx().Model(person).Insert()

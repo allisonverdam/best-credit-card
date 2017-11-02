@@ -34,11 +34,6 @@ func (dao *WalletDAO) GetAuthenticatedPersonWallets(rs app.RequestScope, personI
 
 // CreateWallet saves a new wallet record in the database.
 func (dao *WalletDAO) CreateWallet(rs app.RequestScope, wallet *models.Wallet) error {
-	err := wallet.Validate()
-	if err != nil {
-		return err
-	}
-
 	wallet.CurrentLimit = 0
 	wallet.MaximumLimit = 0
 
@@ -47,11 +42,6 @@ func (dao *WalletDAO) CreateWallet(rs app.RequestScope, wallet *models.Wallet) e
 
 // UpdateWallet saves the changes to an wallet in the database.
 func (dao *WalletDAO) UpdateWallet(rs app.RequestScope, id int, wallet *models.Wallet) error {
-	err := wallet.Validate()
-	if err != nil {
-		return err
-	}
-
 	if _, err := dao.GetWallet(rs, id); err != nil {
 		return err
 	}
