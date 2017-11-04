@@ -276,6 +276,7 @@ func (r *cardResource) GetWalletCards(c *routing.Context) error {
 *	 "expiration_year": 16,
 *	 "cvv": 123,
 *	 "real_limit": 500,
+*	 "currency": BRL,
 *	 "avaliable_limit": 450,
 *	 "wallet_id": 1
 *      }
@@ -355,14 +356,12 @@ func (r *cardResource) UpdateCard(c *routing.Context) error {
 		return err
 	}
 
-	rs := app.GetRequestScope(c)
-
-	card, err := r.service.GetCard(rs, card_id)
-	if err != nil {
+	card := models.Card{}
+	if err := c.Read(&card); err != nil {
 		return err
 	}
 
-	cardBD, err := r.service.UpdateCard(rs, card_id, card)
+	cardBD, err := r.service.UpdateCard(app.GetRequestScope(c), card_id, &card)
 	if err != nil {
 		return err
 	}
