@@ -60,6 +60,7 @@ func (dao *PersonDAO) UpdatePerson(rs app.RequestScope, id int, person *models.P
 		return err
 	}
 
+	person.Id = id
 	if person.Password == "" {
 		person.Password = *&oldPerson.Password
 	} else {

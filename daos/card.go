@@ -54,10 +54,20 @@ func (dao *CardDAO) CreateCard(rs app.RequestScope, card *models.Card) error {
 
 // UpdateCard atualiza os dados de um catrão com id específico.
 func (dao *CardDAO) UpdateCard(rs app.RequestScope, id int, card *models.Card) error {
-	if _, err := dao.GetCard(rs, id); err != nil {
+	old_card, err := dao.GetCard(rs, id)
+	if err != nil {
 		return err
 	}
+
 	card.Id = id
+	card.WalletId = old_card.WalletId
+	return rs.Tx().Model(card).Exclude("Id").Update()
+}
+
+// UpdateCard atualiza os dados de um catrão com id específico.
+func (dao *CardDAO) UpdateCardByCard(rs app.RequestScope, old_card *models.Card, card *models.Card) error {
+	card.Id = old_card.Id
+	card.WalletId = old_card.WalletId
 	return rs.Tx().Model(card).Exclude("Id").Update()
 }
 
