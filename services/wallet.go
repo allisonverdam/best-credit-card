@@ -34,8 +34,8 @@ func NewWalletService(dao WalletDAO) *WalletService {
 }
 
 // GetWallet returns the wallet with the specified the wallet ID.
-func (s *WalletService) GetWallet(rs app.RequestScope, card_id int) (*models.Wallet, error) {
-	wallet, err := s.dao.GetWallet(rs, card_id)
+func (s *WalletService) GetWallet(rs app.RequestScope, wallet_id int) (*models.Wallet, error) {
+	wallet, err := s.dao.GetWallet(rs, wallet_id)
 	if err != nil {
 		return nil, err
 	}
