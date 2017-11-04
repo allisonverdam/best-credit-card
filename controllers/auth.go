@@ -10,7 +10,7 @@ import (
 type (
 	// authService especifica a interface que é utilizada pelo cardResource
 	authService interface {
-		Register(rs app.RequestScope, model *models.Person) (*models.Person, error)
+		Register(rs app.RequestScope, person *models.Person) (*models.Person, error)
 		Login(c *routing.Context, credential models.Credential, signingKey string) (string, error)
 	}
 
@@ -56,11 +56,12 @@ func ServeAuthResource(rg *routing.RouteGroup, service authService) {
 *
  */
 func (r *authResource) Register(c *routing.Context) error {
-	var model models.Person
-	if err := c.Read(&model); err != nil {
+	person := models.Person{}
+	if err := c.Read(&person); err != nil {
 		return err
 	}
-	response, err := r.service.Register(app.GetRequestScope(c), &model)
+
+	response, err := r.service.Register(app.GetRequestScope(c), &person)
 	if err != nil {
 		return err
 	}
