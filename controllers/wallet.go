@@ -15,6 +15,7 @@ type (
 		CreateWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Wallet, error)
 		UpdateWallet(rs app.RequestScope, wallet_id int, wallet *models.Wallet) (*models.Wallet, error)
 		DeleteWallet(rs app.RequestScope, wallet_id int) (*models.Wallet, error)
+		GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error)
 	}
 
 	// walletResource define os handlers para as chamadas do controller.
@@ -27,6 +28,7 @@ type (
 func ServeWalletResource(rg *routing.RouteGroup, service walletService) {
 	r := &walletResource{service}
 	rg.Get("/wallets/<wallet_id>", r.GetWallet)
+	rg.Get("/me/wallets", r.GetAuthenticatedPersonWallets)
 	rg.Post("/wallets", r.CreateWallet)
 	rg.Put("/wallets/<wallet_id>", r.UpdateWallet)
 	rg.Delete("/wallets/<wallet_id>", r.DeleteWallet)
@@ -71,6 +73,40 @@ func (r *walletResource) GetWallet(c *routing.Context) error {
 	}
 
 	return c.Write(wallet)
+}
+
+/**
+* @api {get} /me/wallets GetAuthenticatedPersonWallets
+* @apiVersion 1.0.0
+* @apiName GetAuthenticatedPersonWallets
+* @apiDescription Retorna as carteiras do usuário autenticado.
+* @apiGroup Person
+* @apiUse AuthRequired
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*     [
+*      {
+*	 "id": 3,
+*	 "id": 1,
+*	 "real_limit": 0,
+*	 "maximum_limit": 0,
+*	 "person_id": 1
+*      },
+*      {
+*	 "id": 4,
+*	 "real_limit": 0,
+*	 "maximum_limit": 0,
+*	 "person_id": 1
+*      }
+**/
+func (r *walletResource) GetAuthenticatedPersonWallets(c *routing.Context) error {
+	wallets, err := r.service.GetAuthenticatedPersonWallets(app.GetRequestScope(c))
+	if err != nil {
+		return err
+	}
+
+	return c.Write(wallets)
 }
 
 /**

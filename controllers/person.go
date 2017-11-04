@@ -10,8 +10,7 @@ type (
 	// personService especifica a interface que é utilizada pelo personResource.
 	personService interface {
 		GetPerson(rs app.RequestScope, id int) (*models.Person, error)
-		GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error)
-		UpdateAuthenticatedPerson(rs app.RequestScope, id int, person *models.Person) (*models.Person, error)
+		UpdateAuthenticatedPerson(rs app.RequestScope, person *models.Person) (*models.Person, error)
 	}
 
 	// personResource define os handlers para as chamadas do controller.
@@ -24,7 +23,6 @@ type (
 func ServePersonResource(rg *routing.RouteGroup, service personService) {
 	r := &personResource{service}
 	rg.Get("/me", r.GetAuthenticatedPerson)
-	rg.Get("/me/wallets", r.GetAuthenticatedPersonWallets)
 	rg.Put("/me", r.UpdateAuthenticatedPerson)
 }
 
@@ -52,40 +50,6 @@ func (r *personResource) GetAuthenticatedPerson(c *routing.Context) error {
 	}
 
 	return c.Write(wallet)
-}
-
-/**
-* @api {get} /me/wallets GetAuthenticatedPersonWallets
-* @apiVersion 1.0.0
-* @apiName GetAuthenticatedPersonWallets
-* @apiDescription Retorna as carteiras do usuário autenticado.
-* @apiGroup Person
-* @apiUse AuthRequired
-*
-* @apiSuccessExample Success-Response:
-*     HTTP/1.1 200 OK
-*     [
-*      {
-*	 "id": 3,
-*	 "id": 1,
-*	 "real_limit": 0,
-*	 "maximum_limit": 0,
-*	 "person_id": 1
-*      },
-*      {
-*	 "id": 4,
-*	 "real_limit": 0,
-*	 "maximum_limit": 0,
-*	 "person_id": 1
-*      }
-**/
-func (r *personResource) GetAuthenticatedPersonWallets(c *routing.Context) error {
-	wallets, err := r.service.GetAuthenticatedPersonWallets(app.GetRequestScope(c))
-	if err != nil {
-		return err
-	}
-
-	return c.Write(wallets)
 }
 
 /**
@@ -120,7 +84,7 @@ func (r *personResource) UpdateAuthenticatedPerson(c *routing.Context) error {
 		return err
 	}
 
-	wallet, err := r.service.UpdateAuthenticatedPerson(rs, rs.UserID(), &person)
+	wallet, err := r.service.UpdateAuthenticatedPerson(rs, &person)
 	if err != nil {
 		return err
 	}
