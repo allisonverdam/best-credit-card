@@ -320,7 +320,7 @@ func TestUpdateCardWithErrorWalletNotBelongToTheAuthenticatedPerson(t *testing.T
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.UpdateCard(rs, 1, &tempCard)
+		card, err := service.UpdateCard(rs, 4, &tempCard)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
