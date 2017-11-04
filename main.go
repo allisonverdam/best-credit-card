@@ -53,9 +53,9 @@ func main() {
 func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	router := routing.New()
 
-	router.To("GET,HEAD", "/ping", func(c *routing.Context) error {
-		c.Abort() // skip all other middlewares/handlers
-		return c.Write("pong!")
+	router.Get("/", func(c *routing.Context) error {
+		c.Abort()
+		return c.Write("Seja bem vindo!")
 	})
 
 	/**
