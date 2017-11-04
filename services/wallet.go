@@ -150,3 +150,13 @@ func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card
 
 	return s.dao.UpdateWallet(rs, card.WalletId, wallet)
 }
+
+//Retorna as carteiras de uma pessoa
+func GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
+	walletDao := daos.NewWalletDAO()
+	wallet, err := NewWalletService(walletDao).GetAuthenticatedPersonWallets(rs)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
+}

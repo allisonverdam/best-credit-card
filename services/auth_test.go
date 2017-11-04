@@ -2,14 +2,29 @@ package services
 
 import (
 	"testing"
+	"time"
 
 	"github.com/allisonverdam/best-credit-card/app"
 	"github.com/allisonverdam/best-credit-card/daos"
 	"github.com/allisonverdam/best-credit-card/models"
 	"github.com/allisonverdam/best-credit-card/testdata"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-ozzo/ozzo-routing"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestAuthenticateWithErrorPersonNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewPersonDAO()
+
+	cred := models.Credential{Username: "personnotfound", Password: "12345678"}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		person := Authenticate(cred, dao, &c)
+		assert.Nil(t, person)
+	})
+
+}
 
 func TestLogin(t *testing.T) {
 	db := testdata.ResetDB()
@@ -37,7 +52,7 @@ func TestLoginWithErrorLoginOrPasswordInvalid(t *testing.T) {
 		token, err := service.Login(&c, cred, app.Config.JWTSigningKey)
 		assert.Equal(t, "", token)
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "UNAUTHORIZED", err.Error())
+			assert.Equal(t, "Authentication failed.", err.Error())
 		}
 	})
 
@@ -58,7 +73,7 @@ func TestVerifyPersonOwnerWithError(t *testing.T) {
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
 		err := VerifyPersonOwner(rs, 2, "resource")
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "FORBIDDEN", err.Error())
+			assert.Equal(t, "You're not allowed to do this.", err.Error())
 		}
 	})
 }
@@ -90,5 +105,20 @@ func TestRegisterWithErrorPasswordBlank(t *testing.T) {
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "password: cannot be blank.", err.Error())
 		}
+	})
+}
+
+func TestJWTHandler(t *testing.T) {
+	db := testdata.ResetDB()
+	claims := jwt.MapClaims{
+		"id":   float64(1),
+		"name": "Allison",
+		"exp":  time.Now().Add(time.Hour * 72).Unix(),
+	}
+	j := jwt.Token{Claims: claims}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		err := JWTHandler(&c, &j)
+		assert.Nil(t, err)
 	})
 }

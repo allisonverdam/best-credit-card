@@ -2,7 +2,6 @@ package services
 
 import (
 	"github.com/allisonverdam/best-credit-card/app"
-	"github.com/allisonverdam/best-credit-card/daos"
 	"github.com/allisonverdam/best-credit-card/models"
 )
 
@@ -30,6 +29,10 @@ func NewPersonService(dao personDAO) *PersonService {
 
 // Get returns the person with the specified the person ID.
 func (s *PersonService) GetPerson(rs app.RequestScope, id int) (*models.Person, error) {
+	if err := VerifyPersonOwner(rs, id, "person_id"); err != nil {
+		return nil, err
+	}
+
 	person, err := s.dao.GetPersonWithoutPassword(rs, id)
 	if err != nil {
 		return nil, err
@@ -38,20 +41,9 @@ func (s *PersonService) GetPerson(rs app.RequestScope, id int) (*models.Person, 
 	return person, nil
 }
 
-// Get returns the person with the specified the person ID.
-func (s *PersonService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
-	walletDao := daos.NewWalletDAO()
-
-	wallets, err := walletDao.GetAuthenticatedPersonWallets(rs, rs.UserID())
-	if err != nil {
-		return nil, err
-	}
-
-	return wallets, nil
-}
-
 // UpdateAuthenticatedPerson updates the person with the specified ID.
-func (s *PersonService) UpdateAuthenticatedPerson(rs app.RequestScope, id int, person *models.Person) (*models.Person, error) {
+func (s *PersonService) UpdateAuthenticatedPerson(rs app.RequestScope, person *models.Person) (*models.Person, error) {
+	id := rs.UserID()
 	if err := s.dao.UpdatePerson(rs, id, person); err != nil {
 		return nil, err
 	}

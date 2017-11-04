@@ -1,13 +1,22 @@
 package services
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-ozzo/ozzo-routing"
 
 	"github.com/allisonverdam/best-credit-card/app"
+	"github.com/allisonverdam/best-credit-card/errors"
 	"github.com/go-ozzo/ozzo-dbx"
 )
+
+func loadErrors() {
+	// Carrega as mensagens de erro
+	if err := errors.LoadMessages("../config/errors.yaml"); err != nil {
+		panic(fmt.Errorf("Failed to read the error message file: %s", err))
+	}
+}
 
 func testDBCall(db *dbx.DB, f func(rs app.RequestScope, c routing.Context)) {
 	rs := mockRequestScope(db)
@@ -32,6 +41,7 @@ type requestScope struct {
 }
 
 func mockRequestScope(db *dbx.DB) app.RequestScope {
+	loadErrors()
 	tx, _ := db.Begin()
 	return &requestScope{
 		userID: 1,

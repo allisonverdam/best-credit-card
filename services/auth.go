@@ -25,8 +25,7 @@ func NewAuthService(dao personDAO) *AuthService {
 }
 
 func (s *AuthService) Register(rs app.RequestScope, person *models.Person) (*models.Person, error) {
-	var err error
-	if err = person.Validate(); err != nil {
+	if err := person.Validate(); err != nil {
 		return nil, err
 	}
 	if err := s.dao.CreatePerson(rs, person); err != nil {

@@ -24,6 +24,8 @@ type cardDAO interface {
 	CreateCard(rs app.RequestScope, card *models.Card) error
 	// UpdateCard updates the card with given ID in the storage.
 	UpdateCard(rs app.RequestScope, card_id int, card *models.Card) error
+	// UpdateCard updates the card with given old_card in the storage.
+	UpdateCardByCard(rs app.RequestScope, old_card *models.Card, card *models.Card) error
 	// DeleteCard removes the card with given ID from the storage.
 	DeleteCard(rs app.RequestScope, card_id int) error
 }
@@ -45,15 +47,9 @@ func (s *CardService) GetCard(rs app.RequestScope, card_id int) (*models.Card, e
 		return nil, err
 	}
 
-	wallet, walletErr := GetWalletByCard(rs, card)
+	_, walletErr := GetWalletByCard(rs, card)
 	if walletErr != nil {
 		return nil, walletErr
-	}
-
-	//Verifica se o cartão pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, wallet.PersonId, "card")
-	if err != nil {
-		return nil, err
 	}
 
 	return card, err
@@ -66,19 +62,13 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 		return nil, err
 	}
 
-	wallet, err := GetWalletByCard(rs, card)
-	if err != nil {
-		return nil, err
-	}
-
-	//Verifica se o cartão pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, wallet.PersonId, "card")
-	if err != nil {
-		return nil, err
+	_, walletErr := GetWalletByCard(rs, card)
+	if walletErr != nil {
+		return nil, walletErr
 	}
 
 	if (card.AvaliableLimit + order.Price) > card.RealLimit {
-		return nil, errors.NewAPIError(http.StatusPreconditionFailed, "ERROR", errors.Params{"message": "Price greater than the maximum card limit.", "developer_message": ""})
+		return nil, errors.NewAPIError(http.StatusBadRequest, "ERROR", errors.Params{"message": "Price greater than the maximum card limit.", "developer_message": ""})
 
 	}
 
@@ -106,10 +96,6 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 		return nil, err
 	}
 
-	if err = VerifyPersonOwner(rs, wallet.PersonId, "wallet"); err != nil {
-		return nil, err
-	}
-
 	cards, err := s.dao.GetBestCardsByWallet(rs, *wallet)
 	if err != nil {
 		return nil, err
@@ -124,13 +110,18 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 			break
 		}
 
-		if price > card.RealLimit {
+		if price > card.AvaliableLimit {
 			bestCards = append(bestCards, card)
-			price -= card.RealLimit
+			price -= card.AvaliableLimit
 		} else {
 			bestCards = append(bestCards, card)
+			price -= card.AvaliableLimit
 			break
 		}
+	}
+
+	if price > 0 {
+		return nil, errors.NewAPIError(http.StatusBadRequest, "ERROR", errors.Params{"message": "You don't have enough credit to make this purchase.", "developer_message": ""})
 	}
 
 	return &bestCards, err
@@ -143,22 +134,16 @@ func (s *CardService) GetCardsByWalletId(rs app.RequestScope, walletId int) (*[]
 		return nil, err
 	}
 
-	if err = VerifyPersonOwner(rs, wallet.PersonId, "wallet"); err != nil {
-		return nil, err
-	}
-
 	return s.dao.GetCardsByWallet(rs, *wallet)
 }
 
 // CreateCard creates a new card.
 func (s *CardService) CreateCard(rs app.RequestScope, card *models.Card) (*models.Card, error) {
-	wallet, err := GetWalletByCard(rs, card)
-	if err != nil {
-		return nil, err
+	if validationErr := card.Validate(); validationErr != nil {
+		return nil, validationErr
 	}
 
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	_, err := GetWalletByCard(rs, card)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +161,12 @@ func (s *CardService) CreateCard(rs app.RequestScope, card *models.Card) (*model
 
 // UpdateCard updates the card with the specified ID.
 func (s *CardService) UpdateCard(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error) {
-	if err := s.dao.UpdateCard(rs, card_id, card); err != nil {
+	old_card, err := s.GetCard(rs, card_id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.dao.UpdateCardByCard(rs, old_card, card); err != nil {
 		return nil, err
 	}
 
@@ -189,29 +179,25 @@ func (s *CardService) UpdateCard(rs app.RequestScope, card_id int, card *models.
 
 // DeleteCard deletes the card with the specified ID.
 func (s *CardService) DeleteCard(rs app.RequestScope, card_id int) (*models.Card, error) {
-	card, err := s.dao.GetCard(rs, card_id)
+	card, err := s.GetCard(rs, card_id)
 	if err != nil {
 		return nil, err
 	}
 
-	wallet, err := GetWalletByCard(rs, card)
-	if err != nil {
-		return nil, err
+	_, walletErr := GetWalletByCard(rs, card)
+	if walletErr != nil {
+		return nil, walletErr
 	}
 
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, wallet.PersonId, "card")
-	if err != nil {
-		return nil, err
+	if cardErr := s.dao.DeleteCard(rs, card_id); cardErr != nil {
+		return nil, cardErr
 	}
-
-	err = s.dao.DeleteCard(rs, card_id)
 
 	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
 		return nil, err
 	}
 
-	return card, err
+	return card, nil
 }
 
 //Retorna os limites dos cartoes de uma carteira
@@ -240,25 +226,12 @@ func GetWalletByCard(rs app.RequestScope, card *models.Card) (*models.Wallet, er
 	if err != nil {
 		return nil, err
 	}
-	return wallet, nil
-}
 
-//Retorna as carteiras de uma pessoa
-func GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
-	walletDao := daos.NewWalletDAO()
-	wallet, err := NewWalletService(walletDao).GetAuthenticatedPersonWallets(rs)
-	if err != nil {
-		return nil, err
+	//Verifica se a carteira pertence a pessoa que está autenticada
+	verificationErr := VerifyPersonOwner(rs, wallet.PersonId, "card")
+	if verificationErr != nil {
+		return nil, verificationErr
 	}
-	return wallet, nil
-}
 
-//Retorna a pessoa dona do cartão
-func GetPersonByWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Person, error) {
-	personDao := daos.NewPersonDAO()
-	person, err := NewPersonService(personDao).GetPerson(rs, wallet.PersonId)
-	if err != nil {
-		return nil, err
-	}
-	return person, nil
+	return wallet, nil
 }
