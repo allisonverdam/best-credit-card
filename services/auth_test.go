@@ -108,6 +108,22 @@ func TestRegisterWithErrorPasswordBlank(t *testing.T) {
 	})
 }
 
+func TestRegisterWithErrorDuplicatedUserName(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewPersonDAO()
+	service := NewAuthService(dao)
+	person := models.Person{Email: "joao@gmail.com", Name: "joao", Username: "allisonverdam", Password: "12345678"}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		rs.SetUserID(0)
+		personRes, err := service.Register(rs, &person)
+		assert.Nil(t, personRes)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "pq: duplicate key value violates unique constraint \"person_username_key\"", err.Error())
+		}
+	})
+}
+
 func TestJWTHandler(t *testing.T) {
 	db := testdata.ResetDB()
 	claims := jwt.MapClaims{
