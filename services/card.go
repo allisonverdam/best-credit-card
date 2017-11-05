@@ -19,15 +19,13 @@ type cardDAO interface {
 	// GetBestCardsByWallet returns the best cards to a order in a wallet.
 	GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) ([]models.Card, error)
 	// GetCardsByWallet returns the cards of a wallet.
-	GetCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error)
+	GetCardsByWallet(rs app.RequestScope, wallet models.Wallet) ([]models.Card, error)
 	//GetWalletCardsLimits return the limits of a wallet with the specified ID
 	GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error)
 	// CreateCard saves a new card in the storage.
 	CreateCard(rs app.RequestScope, card *models.Card) error
 	// UpdateCard updates the card with given ID in the storage.
 	UpdateCard(rs app.RequestScope, card_id int, card *models.Card) error
-	// UpdateCard updates the card with given old_card in the storage.
-	UpdateCardByCard(rs app.RequestScope, old_card *models.Card, card *models.Card) error
 	// DeleteCard removes the card with given ID from the storage.
 	DeleteCard(rs app.RequestScope, card_id int) error
 }
@@ -88,17 +86,14 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 }
 
 // GetBestCards returns the best cards for a order in a wallet.
-func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[]models.Card, error) {
-	if err := order.Validate(); err != nil {
-		return nil, err
-	}
+func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) ([]models.Card, error) {
 
-	wallet, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, order.WalletId)
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetAuthenticatedPersonWallet(rs)
 	if err != nil {
 		return nil, err
 	}
 
-	cards, err := s.dao.GetBestCardsByWallet(rs, *wallet)
+	cards, err := s.dao.GetBestCardsByWallet(rs, *&wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -125,10 +120,6 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 	By(dueDate).Sort(cards)
 
 	for _, card := range cards {
-		if price <= 0 {
-			break
-		}
-
 		if price > card.AvaliableLimit {
 			bestCards = append(bestCards, card)
 			price -= card.AvaliableLimit
@@ -143,7 +134,7 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 		return nil, errors.NewAPIError(http.StatusBadRequest, "ERROR", errors.Params{"message": "You don't have enough credit to make this purchase.", "developer_message": ""})
 	}
 
-	return &bestCards, err
+	return bestCards, nil
 }
 
 type By func(c1, c2 *models.Card) bool
@@ -177,13 +168,13 @@ func (s *cardSorter) Less(i, j int) bool {
 }
 
 // GetCard returns the card with the specified the card ID.
-func (s *CardService) GetCardsByWalletId(rs app.RequestScope, walletId int) (*[]models.Card, error) {
-	wallet, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, walletId)
+func (s *CardService) GetAuthenticatedPersonCards(rs app.RequestScope) ([]models.Card, error) {
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetAuthenticatedPersonWallet(rs)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.dao.GetCardsByWallet(rs, *wallet)
+	return s.dao.GetCardsByWallet(rs, wallet)
 }
 
 // CreateCard creates a new card.
@@ -192,16 +183,17 @@ func (s *CardService) CreateCard(rs app.RequestScope, card *models.Card) (*model
 		return nil, validationErr
 	}
 
-	_, err := GetWalletByCard(rs, card)
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetAuthenticatedPersonWallet(rs)
 	if err != nil {
 		return nil, err
 	}
 
+	card.WalletId = wallet.Id
 	if err := s.dao.CreateCard(rs, card); err != nil {
 		return nil, err
 	}
 
-	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
+	if err := s.UpdateWalletLimits(rs, wallet.Id); err != nil {
 		return nil, err
 	}
 
@@ -215,7 +207,7 @@ func (s *CardService) UpdateCard(rs app.RequestScope, card_id int, card *models.
 		return nil, err
 	}
 
-	if err := s.dao.UpdateCardByCard(rs, old_card, card); err != nil {
+	if err := s.dao.UpdateCard(rs, old_card.Id, card); err != nil {
 		return nil, err
 	}
 

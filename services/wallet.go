@@ -16,11 +16,9 @@ type WalletDAO interface {
 	// CreateWallet saves a new wallet in the storage.
 	CreateWallet(rs app.RequestScope, wallet *models.Wallet) error
 	// UpdateWallet updates the wallet with given ID in the storage.
-	UpdateWallet(rs app.RequestScope, card_id int, wallet *models.Wallet) error
-	// DeleteWallet removes the wallet with given ID from the storage.
-	DeleteWallet(rs app.RequestScope, card_id int) error
-	//GetAuthenticatedPersonWallets return the wallets from authenticated person
-	GetAuthenticatedPersonWallets(rs app.RequestScope, personId int) ([]models.Wallet, error)
+	UpdateWallet(rs app.RequestScope, wallet_id int, wallet *models.Wallet) error
+	//GetWalletByPersonId return the wallet from authenticated person
+	GetWalletByPersonId(rs app.RequestScope, personId int) (models.Wallet, error)
 }
 
 // WalletService provides services related with wallets.
@@ -59,8 +57,8 @@ func (s *WalletService) GetWalletThrowVerification(rs app.RequestScope, card_id 
 	return wallet, nil
 }
 
-func (s *WalletService) GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
-	return s.dao.GetAuthenticatedPersonWallets(rs, rs.UserID())
+func (s *WalletService) GetAuthenticatedPersonWallet(rs app.RequestScope) (models.Wallet, error) {
+	return s.dao.GetWalletByPersonId(rs, rs.UserID())
 }
 
 // CreateWallet creates a new wallet.
@@ -84,23 +82,21 @@ func (s *WalletService) CreateWallet(rs app.RequestScope, wallet *models.Wallet)
 }
 
 // UpdateWallet updates the wallet with the specified ID.
-func (s *WalletService) UpdateWallet(rs app.RequestScope, card_id int, wallet *models.Wallet) (*models.Wallet, error) {
-	if err := wallet.Validate(); err != nil {
-		return nil, err
-	}
+func (s *WalletService) UpdateAuthenticatedPersonWallet(rs app.RequestScope, wallet *models.Wallet) (*models.Wallet, error) {
+	wallet.PersonId = rs.UserID()
 
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	err := VerifyPersonOwner(rs, wallet.PersonId, "wallet")
+	oldWallet, err := s.GetAuthenticatedPersonWallet(rs)
 	if err != nil {
 		return nil, err
 	}
 
 	//card é usado pra representar a soma dos limites dos cartões
-	card, err := NewCardService(daos.NewCardDAO()).GetWalletCardsLimits(rs, wallet.Id)
+	card, err := NewCardService(daos.NewCardDAO()).GetWalletCardsLimits(rs, oldWallet.Id)
 	if err != nil {
 		return nil, err
 	}
 
+	wallet.Id = oldWallet.Id
 	wallet.MaximumLimit = card.RealLimit
 	wallet.AvaliableLimit = card.AvaliableLimit
 
@@ -110,27 +106,10 @@ func (s *WalletService) UpdateWallet(rs app.RequestScope, card_id int, wallet *m
 		wallet.AvaliableLimit = card.AvaliableLimit - wallet.CurrentLimit
 	}
 
-	if err := s.dao.UpdateWallet(rs, card_id, wallet); err != nil {
+	if err := s.dao.UpdateWallet(rs, oldWallet.Id, wallet); err != nil {
 		return nil, err
 	}
-	return s.dao.GetWallet(rs, card_id)
-}
-
-// DeleteWallet deletes the wallet with the specified ID.
-func (s *WalletService) DeleteWallet(rs app.RequestScope, card_id int) (*models.Wallet, error) {
-	wallet, err := s.dao.GetWallet(rs, card_id)
-	if err != nil {
-		return nil, err
-	}
-
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.dao.DeleteWallet(rs, card_id)
-	return wallet, err
+	return s.dao.GetWallet(rs, oldWallet.Id)
 }
 
 func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card) error {
@@ -139,24 +118,8 @@ func (s *WalletService) UpdateWalletLimits(rs app.RequestScope, card models.Card
 		return err
 	}
 
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	err = VerifyPersonOwner(rs, wallet.PersonId, "wallet")
-	if err != nil {
-		return err
-	}
-
 	wallet.MaximumLimit = card.AvaliableLimit
 	wallet.AvaliableLimit = card.AvaliableLimit - wallet.CurrentLimit
 
 	return s.dao.UpdateWallet(rs, card.WalletId, wallet)
-}
-
-//Retorna as carteiras de uma pessoa
-func GetAuthenticatedPersonWallets(rs app.RequestScope) ([]models.Wallet, error) {
-	walletDao := daos.NewWalletDAO()
-	wallet, err := NewWalletService(walletDao).GetAuthenticatedPersonWallets(rs)
-	if err != nil {
-		return nil, err
-	}
-	return wallet, nil
 }
