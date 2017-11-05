@@ -12,14 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetAuthenticatedPersonWallets(t *testing.T) {
+func TestGetAuthenticatedPersonWallet(t *testing.T) {
 	db := testdata.ResetDB()
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		wallets, err := GetAuthenticatedPersonWallets(rs)
+		wallet, err := service.GetAuthenticatedPersonWallet(rs)
 		assert.Nil(t, err)
-		if assert.NotNil(t, wallets) {
-			assert.Equal(t, 1, len(wallets))
+		if assert.NotNil(t, wallet) {
+			assert.Equal(t, 1, wallet.Id)
 		}
 	})
 
@@ -30,23 +32,54 @@ func TestCreateWallet(t *testing.T) {
 	service := NewWalletService(dao)
 	db := testdata.ResetDB()
 	wallet := models.Wallet{
-		AvaliableLimit: 125,
-		CurrentLimit:   75,
-		MaximumLimit:   200,
-		PersonId:       1,
+		PersonId: 1,
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
 		wallet, err := service.CreateWallet(rs, &wallet)
 		assert.Nil(t, err)
 		if assert.NotNil(t, wallet) {
-			assert.Equal(t, 125.0, wallet.AvaliableLimit)
+			assert.Equal(t, 4, wallet.Id)
 		}
 	})
 
 }
 
-func TestUpdateWallet(t *testing.T) {
+func TestCreateWalletWithErrorWalletNotBelongToTheAuthenticatedPerson(t *testing.T) {
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
+	db := testdata.ResetDB()
+	wallet := models.Wallet{
+		PersonId: 21,
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		wallet, err := service.CreateWallet(rs, &wallet)
+		assert.Nil(t, wallet)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "You're not allowed to do this.", err.Error())
+		}
+	})
+
+}
+
+func TestCreateWalletWithErrorNotPassingAllRequiredParams(t *testing.T) {
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
+	db := testdata.ResetDB()
+	wallet := models.Wallet{}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		wallet, err := service.CreateWallet(rs, &wallet)
+		assert.Nil(t, wallet)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "-: cannot be blank.", err.Error())
+		}
+	})
+
+}
+
+func TestUpdateAuthenticatedPersonWallet(t *testing.T) {
 	dao := daos.NewWalletDAO()
 	service := NewWalletService(dao)
 	db := testdata.ResetDB()
@@ -56,16 +89,16 @@ func TestUpdateWallet(t *testing.T) {
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		wallet, err := service.UpdateWallet(rs, 1, &wallet)
+		wallet, err := service.UpdateAuthenticatedPersonWallet(rs, &wallet)
 		assert.Nil(t, err)
 		if assert.NotNil(t, wallet) {
-			assert.Equal(t, 0.0, wallet.MaximumLimit)
+			assert.Equal(t, 1200.0, wallet.MaximumLimit)
 		}
 	})
 
 }
 
-func TestUpdateWalletWithError(t *testing.T) {
+func TestUpdateAuthenticatedPersonWalletWithErrorInvalidCurrentLimit(t *testing.T) {
 	dao := daos.NewWalletDAO()
 	service := NewWalletService(dao)
 	db := testdata.ResetDB()
@@ -75,38 +108,57 @@ func TestUpdateWalletWithError(t *testing.T) {
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		wallet, err := service.UpdateWallet(rs, 1, &wallet)
+		wallet, err := service.UpdateAuthenticatedPersonWallet(rs, &wallet)
 		assert.Nil(t, wallet)
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "Attempted to increase to a higher limit than available. This is your avaliable limit: R$0. Pay some credit card to release more credit.", err.Error())
+			assert.Equal(t, "Attempted to increase to a higher limit than available. This is your avaliable limit: R$830. Pay some credit card to release more credit.", err.Error())
 		}
 	})
 
 }
 
-func TestDeleteWallet(t *testing.T) {
+func TestGetWalletThrowVerificationWithError(t *testing.T) {
 	dao := daos.NewWalletDAO()
 	service := NewWalletService(dao)
 	db := testdata.ResetDB()
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		wallet, err := service.DeleteWallet(rs, 1)
-		assert.Nil(t, err)
-		if assert.NotNil(t, wallet) {
-			assert.Equal(t, 1, wallet.Id)
-		}
-	})
-
-}
-
-func TestDeleteWalletWithError(t *testing.T) {
-	dao := daos.NewWalletDAO()
-	service := NewWalletService(dao)
-	db := testdata.ResetDB()
-
-	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		wallet, err := service.DeleteWallet(rs, 2)
+		wallet, err := service.GetWalletThrowVerification(rs, 999)
 		assert.Nil(t, wallet)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
+
+}
+
+func TestUpdateWalletLimitsWithErrorWalletNotFound(t *testing.T) {
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
+	db := testdata.ResetDB()
+	card := models.Card{
+		WalletId: 999,
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		err := service.UpdateWalletLimits(rs, card)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
+
+}
+
+func TestUpdateWalletLimitsWithErrorWalletNotBelongToTheAuthenticatedPerson(t *testing.T) {
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
+	db := testdata.ResetDB()
+	card := models.Card{
+		WalletId: 2,
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		err := service.UpdateWalletLimits(rs, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
 		}
