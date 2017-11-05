@@ -47,7 +47,7 @@ func (s *CardService) GetCard(rs app.RequestScope, card_id int) (*models.Card, e
 		return nil, err
 	}
 
-	_, walletErr := GetWalletByCard(rs, card)
+	_, walletErr := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, card.WalletId)
 	if walletErr != nil {
 		return nil, walletErr
 	}
@@ -62,7 +62,7 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 		return nil, err
 	}
 
-	_, walletErr := GetWalletByCard(rs, card)
+	_, walletErr := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, card.WalletId)
 	if walletErr != nil {
 		return nil, walletErr
 	}
@@ -225,11 +225,6 @@ func (s *CardService) DeleteCard(rs app.RequestScope, card_id int) (*models.Card
 		return nil, err
 	}
 
-	_, walletErr := GetWalletByCard(rs, card)
-	if walletErr != nil {
-		return nil, walletErr
-	}
-
 	if cardErr := s.dao.DeleteCard(rs, card_id); cardErr != nil {
 		return nil, cardErr
 	}
@@ -243,6 +238,11 @@ func (s *CardService) DeleteCard(rs app.RequestScope, card_id int) (*models.Card
 
 //Retorna os limites dos cartoes de uma carteira
 func (s *CardService) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
+	_, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, walletId)
+	if err != nil {
+		return nil, err
+	}
+
 	card, err := s.dao.GetWalletCardsLimits(rs, walletId)
 	if err != nil {
 		return nil, err
@@ -258,21 +258,4 @@ func (s *CardService) UpdateWalletLimits(rs app.RequestScope, walletId int) erro
 	}
 
 	return NewWalletService(daos.NewWalletDAO()).UpdateWalletLimits(rs, *card)
-}
-
-//Retorna a carteira que o cartão faz parte
-func GetWalletByCard(rs app.RequestScope, card *models.Card) (*models.Wallet, error) {
-	walletDao := daos.NewWalletDAO()
-	wallet, err := NewWalletService(walletDao).GetWalletThrowVerification(rs, card.WalletId)
-	if err != nil {
-		return nil, err
-	}
-
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	verificationErr := VerifyPersonOwner(rs, wallet.PersonId, "card")
-	if verificationErr != nil {
-		return nil, verificationErr
-	}
-
-	return wallet, nil
 }
