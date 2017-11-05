@@ -47,8 +47,8 @@ func TestGetCardsByWallet(t *testing.T) {
 
 		cards, err := dao.GetCardsByWallet(rs, wallet)
 		assert.Nil(t, err)
-		if assert.NotNil(t, cards) {
-			assert.Equal(t, 3, len(*cards))
+		if assert.NotNil(t, &cards) {
+			assert.Equal(t, 3, len(*&cards))
 		}
 	})
 }
