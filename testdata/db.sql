@@ -47,13 +47,13 @@ INSERT INTO wallet (current_limit, maximum_limit, avaliable_limit, person_id) VA
 INSERT INTO wallet (current_limit, maximum_limit, avaliable_limit, person_id) VALUES (0, 0, 0, 2);
 INSERT INTO wallet (current_limit, maximum_limit, avaliable_limit, person_id) VALUES (0, 0, 0, 3);
 
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341230', 01, 03, 17, 123, 300, 180, 'BRL', 1);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341231', 06, 06, 17, 123, 400, 200, 'BRL', 1);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341232', 11, 08, 16, 123, 500, 450, 'BRL', 1);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341233', 12, 10, 14, 123, 600, 480, 'BRL', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341234', 12, 01, 14, 123, 300, 120, 'BRL', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341235', 13, 02, 15, 123, 400, 350, 'BRL', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341236', 14, 03, 15, 123, 500, 480, 'BRL', 2);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341237', 15, 04, 16, 123, 600, 360, 'BRL', 3);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341238', 16, 05, 17, 123, 700, 670, 'BRL', 3);
-INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('1234123412341239', 17, 06, 16, 123, 800, 600, 'BRL', 3);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('556283904653288', 01, 03, 17, 962, 300, 180, 'BRL', 1);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('5379376458400401', 06, 06, 17, 502, 400, 200, 'BRL', 1);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('5504293104188926', 11, 08, 16, 828, 500, 450, 'BRL', 1);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('5226954811545719', 12, 10, 14, 174, 600, 480, 'BRL', 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('5127844999107657', 12, 01, 14, 816, 300, 120, 'BRL', 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('5387109792240799', 13, 02, 15, 929, 400, 350, 'BRL', 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('4716374482701485', 14, 03, 15, 208, 500, 480, 'BRL', 2);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('4556972865743967', 15, 04, 16, 411, 600, 360, 'BRL', 3);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('4539680897185501', 16, 05, 17, 863, 700, 670, 'BRL', 3);
+INSERT INTO card (cc_number, cc_due_date, cc_expiration_month, cc_expiration_year, cc_cvv, cc_real_limit, cc_avaliable_limit, cc_currency, wallet_id) VALUES ('4716461976896242', 17, 06, 16, 876, 800, 600, 'BRL', 3);
