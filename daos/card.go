@@ -24,7 +24,7 @@ func (dao *CardDAO) GetCard(rs app.RequestScope, id int) (*models.Card, error) {
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.
-func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error) {
+func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) ([]models.Card, error) {
 	cards := []models.Card{}
 
 	//pega os cartões de uma determinada carteira, e ordena pelo maior cc_due_date
@@ -33,7 +33,7 @@ func (dao *CardDAO) GetBestCardsByWallet(rs app.RequestScope, wallet models.Wall
 		return nil, err
 	}
 
-	return &cards, nil
+	return cards, nil
 }
 
 // GetCardsByWalletId retorna uma lista de cartões de uma pessoa com id pespecífico.

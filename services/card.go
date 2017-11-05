@@ -2,6 +2,8 @@ package services
 
 import (
 	"net/http"
+	"sort"
+	"time"
 
 	"github.com/allisonverdam/best-credit-card/daos"
 
@@ -15,7 +17,7 @@ type cardDAO interface {
 	// GetCard returns the card with the specified ID.
 	GetCard(rs app.RequestScope, card_id int) (*models.Card, error)
 	// GetBestCardsByWallet returns the best cards to a order in a wallet.
-	GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error)
+	GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) ([]models.Card, error)
 	// GetCardsByWallet returns the cards of a wallet.
 	GetCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error)
 	//GetWalletCardsLimits return the limits of a wallet with the specified ID
@@ -104,8 +106,25 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 	bestCards := []models.Card{}
 
 	price := *&order.Price
+	today := time.Now().Day()
 
-	for _, card := range *cards {
+	//verificando se o dueDate é menor que o dia atual
+	//assim ele é mais longe, então adiciono 100 ao valor para fica maior
+	for i, card := range cards {
+		if card.DueDate <= today {
+			cards[i].DueDate += card.DueDate + 100
+		}
+	}
+
+	// definindo como sera ordenado.
+	dueDate := func(c1, c2 *models.Card) bool {
+		return c1.DueDate > c2.DueDate
+	}
+
+	//ordenando pelo maior dueDate
+	By(dueDate).Sort(cards)
+
+	for _, card := range cards {
 		if price <= 0 {
 			break
 		}
@@ -125,6 +144,36 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 	}
 
 	return &bestCards, err
+}
+
+type By func(c1, c2 *models.Card) bool
+
+type cardSorter struct {
+	cards []models.Card
+	by    func(p1, p2 *models.Card) bool
+}
+
+func (by By) Sort(cards []models.Card) {
+	ps := &cardSorter{
+		cards: cards,
+		by:    by, // Metodo definido para fazer a ordenação
+	}
+	sort.Sort(ps)
+}
+
+// Len is part of sort.Interface.
+func (s *cardSorter) Len() int {
+	return len(s.cards)
+}
+
+// Swap is part of sort.Interface.
+func (s *cardSorter) Swap(i, j int) {
+	s.cards[i], s.cards[j] = s.cards[j], s.cards[i]
+}
+
+// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
+func (s *cardSorter) Less(i, j int) bool {
+	return s.by(&s.cards[i], &s.cards[j])
 }
 
 // GetCard returns the card with the specified the card ID.
