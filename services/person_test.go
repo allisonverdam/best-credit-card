@@ -59,3 +59,23 @@ func TestUpdateAuthenticatedPerson(t *testing.T) {
 	})
 
 }
+
+func TestUpdateAuthenticatedPersonWithErrorPersonNotFound(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewPersonDAO()
+	service := NewPersonService(dao)
+	newPerson := models.Person{
+		Email: "teste@g.com",
+		Name:  "carlos",
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		rs.SetUserID(9999)
+		person, err := service.UpdateAuthenticatedPerson(rs, &newPerson)
+		assert.Nil(t, person)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
+
+}

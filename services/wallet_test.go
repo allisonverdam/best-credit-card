@@ -19,7 +19,7 @@ func TestGetAuthenticatedPersonWallets(t *testing.T) {
 		wallets, err := GetAuthenticatedPersonWallets(rs)
 		assert.Nil(t, err)
 		if assert.NotNil(t, wallets) {
-			assert.Equal(t, 2, len(wallets))
+			assert.Equal(t, 1, len(wallets))
 		}
 	})
 
