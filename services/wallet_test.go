@@ -117,6 +117,41 @@ func TestUpdateAuthenticatedPersonWalletWithErrorInvalidCurrentLimit(t *testing.
 
 }
 
+func TestUpdateAuthenticatedPersonWalletWithErrorUserIdNull(t *testing.T) {
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
+	db := testdata.ResetDB()
+	wallet := models.Wallet{
+		CurrentLimit: 10,
+		PersonId:     1,
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		rs.SetUserID(0)
+		wallet, err := service.UpdateAuthenticatedPersonWallet(rs, &wallet)
+		assert.Nil(t, wallet)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+		}
+	})
+
+}
+
+func TestGetWalletThrowVerification(t *testing.T) {
+	dao := daos.NewWalletDAO()
+	service := NewWalletService(dao)
+	db := testdata.ResetDB()
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		wallet, err := service.GetWalletThrowVerification(rs, 1)
+		assert.Nil(t, err)
+		if assert.NotNil(t, wallet) {
+			assert.Equal(t, 1, wallet.Id)
+		}
+	})
+
+}
+
 func TestGetWalletThrowVerificationWithError(t *testing.T) {
 	dao := daos.NewWalletDAO()
 	service := NewWalletService(dao)
