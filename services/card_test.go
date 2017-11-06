@@ -148,6 +148,7 @@ func TestGetBestCards(t *testing.T) {
 		assert.Nil(t, err)
 		if assert.NotNil(t, cards) {
 			assert.Equal(t, 1, len(*&cards))
+			assert.Equal(t, "556283904653288", *&cards[0].Number)
 		}
 	})
 
