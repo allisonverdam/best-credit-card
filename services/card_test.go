@@ -20,7 +20,7 @@ func TestGetCard(t *testing.T) {
 		card, err := service.GetCard(rs, 1)
 		assert.Nil(t, err)
 		if assert.NotNil(t, card) {
-			assert.Equal(t, "1234123412341230", card.Number)
+			assert.Equal(t, "556283904653288", card.Number)
 		}
 	})
 
@@ -48,7 +48,7 @@ func TestGetCardWithErrorCardDoesNotBelongToTheAuthenticatedUser(t *testing.T) {
 	service := NewCardService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.GetCard(rs, 4)
+		card, err := service.GetCard(rs, 5)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
@@ -102,7 +102,7 @@ func TestPayCreditCardWithErrorCardNotBelongToThisPerson(t *testing.T) {
 	service := NewCardService(dao)
 	order := models.Order{
 		Price:  100,
-		CardId: 4,
+		CardId: 5,
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
@@ -139,7 +139,7 @@ func TestGetBestCards(t *testing.T) {
 	dao := daos.NewCardDAO()
 	service := NewCardService(dao)
 	order := models.Order{
-		Price:    613,
+		Price:    180,
 		WalletId: 1,
 	}
 
@@ -147,7 +147,28 @@ func TestGetBestCards(t *testing.T) {
 		cards, err := service.GetBestCards(rs, &order)
 		assert.Nil(t, err)
 		if assert.NotNil(t, cards) {
-			assert.Equal(t, 2, len(*cards))
+			assert.Equal(t, 1, len(*&cards))
+		}
+	})
+
+}
+
+func TestGetBestCardsWithErrorUserIdNull(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewCardDAO()
+	service := NewCardService(dao)
+	order := models.Order{
+		Price:    180,
+		WalletId: 1,
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		rs.SetUserID(0)
+		cards, err := service.GetBestCards(rs, &order)
+		assert.Nil(t, cards)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "sql: no rows in result set", err.Error())
+
 		}
 	})
 
@@ -172,31 +193,32 @@ func TestGetBestCardsWithErrorLimitNotAvaliable(t *testing.T) {
 
 }
 
-func TestGetCardsByWalletId(t *testing.T) {
+func TestGetAuthenticatedPersonCards(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := daos.NewCardDAO()
 	service := NewCardService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		cards, err := service.GetCardsByWalletId(rs, 1)
+		cards, err := service.GetAuthenticatedPersonCards(rs)
 		assert.Nil(t, err)
 		if assert.NotNil(t, cards) {
-			assert.Equal(t, 3, len(*cards))
+			assert.Equal(t, 4, len(*&cards))
 		}
 	})
 
 }
 
-func TestGetCardsByWalletIdWithErrorWalletDontBelongToAuthenticatedPerson(t *testing.T) {
+func TestGetAuthenticatedPersonCardsWithErrorUserIdNull(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := daos.NewCardDAO()
 	service := NewCardService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		cards, err := service.GetCardsByWalletId(rs, 2)
+		rs.SetUserID(0)
+		cards, err := service.GetAuthenticatedPersonCards(rs)
 		assert.Nil(t, cards)
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "You're not allowed to do this.", err.Error())
+			assert.Equal(t, "sql: no rows in result set", err.Error())
 		}
 	})
 
@@ -209,11 +231,11 @@ func TestCreateCard(t *testing.T) {
 	tempCard := models.Card{
 		AvaliableLimit:  100,
 		Currency:        "BRL",
-		CVV:             123,
+		CVV:             140,
 		DueDate:         2,
 		ExpirationMonth: 2,
 		ExpirationYear:  22,
-		Number:          "2122123233233122",
+		Number:          "372806553652702",
 		RealLimit:       322,
 		WalletId:        1,
 	}
@@ -222,33 +244,34 @@ func TestCreateCard(t *testing.T) {
 		card, err := service.CreateCard(rs, &tempCard)
 		assert.Nil(t, err)
 		if assert.NotNil(t, card) {
-			assert.Equal(t, "2122123233233122", card.Number)
+			assert.Equal(t, "372806553652702", card.Number)
 		}
 	})
 
 }
 
-func TestCreateCardWithErrorWalletNotBelongToAuthenticatedPerson(t *testing.T) {
+func TestCreateCardWithErrorUserIdNull(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := daos.NewCardDAO()
 	service := NewCardService(dao)
 	tempCard := models.Card{
 		AvaliableLimit:  100,
 		Currency:        "BRL",
-		CVV:             123,
+		CVV:             140,
 		DueDate:         2,
 		ExpirationMonth: 2,
 		ExpirationYear:  22,
-		Number:          "2122123233233122",
+		Number:          "372806553652702",
 		RealLimit:       322,
-		WalletId:        2,
+		WalletId:        1,
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		rs.SetUserID(0)
 		card, err := service.CreateCard(rs, &tempCard)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "You're not allowed to do this.", err.Error())
+			assert.Equal(t, "sql: no rows in result set", err.Error())
 		}
 	})
 
@@ -261,7 +284,7 @@ func TestCreateCardWithErrorNotPassingAllRequiredAttibutes(t *testing.T) {
 	tempCard := models.Card{
 		AvaliableLimit:  100,
 		Currency:        "BRL",
-		CVV:             123,
+		CVV:             379,
 		DueDate:         2,
 		ExpirationMonth: 2,
 		ExpirationYear:  22,
@@ -274,6 +297,31 @@ func TestCreateCardWithErrorNotPassingAllRequiredAttibutes(t *testing.T) {
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "number: cannot be blank.", err.Error())
+		}
+	})
+
+}
+
+func TestCreateCardWithErrorDuplicatedNumber(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewCardDAO()
+	service := NewCardService(dao)
+	tempCard := models.Card{
+		Number:          "5379376458400401",
+		AvaliableLimit:  100,
+		Currency:        "BRL",
+		CVV:             123,
+		DueDate:         2,
+		ExpirationMonth: 2,
+		ExpirationYear:  22,
+		RealLimit:       322,
+	}
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		card, err := service.CreateCard(rs, &tempCard)
+		assert.Nil(t, card)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "pq: duplicate key value violates unique constraint \"card_cc_number_key\"", err.Error())
 		}
 	})
 
@@ -304,31 +352,6 @@ func TestUpdateCard(t *testing.T) {
 
 }
 
-func TestUpdateCardWithErrorWalletNotBelongToTheAuthenticatedPerson(t *testing.T) {
-	db := testdata.ResetDB()
-	dao := daos.NewCardDAO()
-	service := NewCardService(dao)
-	tempCard := models.Card{
-		AvaliableLimit:  100,
-		Currency:        "BRL",
-		CVV:             123,
-		DueDate:         2,
-		ExpirationMonth: 2,
-		ExpirationYear:  22,
-		RealLimit:       322,
-		WalletId:        2,
-	}
-
-	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.UpdateCard(rs, 4, &tempCard)
-		assert.Nil(t, card)
-		if assert.NotNil(t, err) {
-			assert.Equal(t, "You're not allowed to do this.", err.Error())
-		}
-	})
-
-}
-
 func TestUpdateCardWithErrorCardNotBelongToTheAuthenticatedPerson(t *testing.T) {
 	db := testdata.ResetDB()
 	dao := daos.NewCardDAO()
@@ -341,11 +364,10 @@ func TestUpdateCardWithErrorCardNotBelongToTheAuthenticatedPerson(t *testing.T) 
 		ExpirationMonth: 2,
 		ExpirationYear:  22,
 		RealLimit:       322,
-		WalletId:        1,
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.UpdateCard(rs, 4, &tempCard)
+		card, err := service.UpdateCard(rs, 5, &tempCard)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
@@ -375,8 +397,37 @@ func TestDeleteCardWithErrorCardNotBelongToTheAuthenticatedPerson(t *testing.T) 
 	service := NewCardService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.DeleteCard(rs, 4)
+		card, err := service.DeleteCard(rs, 5)
 		assert.Nil(t, card)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "You're not allowed to do this.", err.Error())
+		}
+	})
+
+}
+
+func TestGetWalletCardsLimitsWithErrorWalletNotBelongToTheAuthenticatedPerson(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewCardDAO()
+	service := NewCardService(dao)
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		card, err := service.GetWalletCardsLimits(rs, 3)
+		assert.Nil(t, card)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, "You're not allowed to do this.", err.Error())
+		}
+	})
+
+}
+
+func TestUpdateWalletLimitsWithError(t *testing.T) {
+	db := testdata.ResetDB()
+	dao := daos.NewCardDAO()
+	service := NewCardService(dao)
+
+	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
+		err := service.UpdateWalletLimits(rs, 3)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
 		}

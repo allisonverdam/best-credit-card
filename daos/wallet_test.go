@@ -27,10 +27,10 @@ func TestGetWalletOfAuthenticatedPerson(t *testing.T) {
 	dao := NewWalletDAO()
 
 	testDBCall(db, func(rs app.RequestScope) {
-		wallets, err := dao.GetAuthenticatedPersonWallets(rs, rs.UserID())
+		wallets, err := dao.GetWalletByPersonId(rs, rs.UserID())
 		assert.Nil(t, err)
 		if assert.NotNil(t, wallets) {
-			assert.Equal(t, 1, wallets[0].Id)
+			assert.Equal(t, 1, wallets.Id)
 		}
 	})
 }

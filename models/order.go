@@ -39,3 +39,9 @@ func (m Order) ValidateCardIdAndPrice() error {
 		validation.Field(&m.Price, validation.Required, validation.Min(0.0)),
 	)
 }
+
+func (m Order) ValidatePrice() error {
+	return validation.ValidateStruct(&m,
+		validation.Field(&m.Price, validation.Required, validation.Min(0.0)),
+	)
+}

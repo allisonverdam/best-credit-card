@@ -48,4 +48,6 @@ A aplicação vai iniciar na porta 8080 por padrão.
 
 ## Documentação
 
-Todos os endpoints estão documentados com exemplos de request e response, a documentação se encontra aqui no projeto, mas também é possível acessar [Clicando aqui.](https://allisonverdam.github.io/best-credit-card/doc)
+Todos os endpoints estão documentados com exemplos de request e response, a documentação se encontra aqui no projeto, mas também é possível acessar [clicando aqui.](https://allisonverdam.github.io/best-credit-card/doc)
+
+E também temos uma coleção publicada pronta para utilizar no postman, [clique aqui.](https://documenter.getpostman.com/view/659591/best-credit-card-unique-wallet/77h84Nt)

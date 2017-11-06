@@ -102,41 +102,11 @@ define({ "api": [
     "name": "CreateCard",
     "description": "<p>Cria um novo cartão.</p>",
     "group": "Card",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>Essa carteira não pertence ao usuário autenticado.</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotFound",
-            "description": "<p>Recurso não encontrado.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Forbidden:",
-          "content": "    HTTP/1.1 403 Forbidden\n    {\n\t\"error_code\": \"FORBIDDEN\",\n\t\"message\": \"You're not allowed to do this.\",\n\t\"developer_message\": \"This wallet does not belong to the authenticated user.\"\n    }",
-          "type": "json"
-        },
-        {
-          "title": "NotFound:",
-          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
-          "type": "json"
-        }
-      ]
-    },
     "parameter": {
       "examples": [
         {
           "title": "Request-Example:",
-          "content": "     {\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }",
+          "content": "     {\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450\n     }",
           "type": "json"
         }
       ]
@@ -145,7 +115,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450\n     }",
           "type": "json"
         }
       ]
@@ -157,6 +127,25 @@ define({ "api": [
         {
           "title": "Headers:",
           "content": "    {\n      \"Authorization\": \"Bearer {{TOKEN}}\",\n\t\t\"Content-Type\": \"application/json\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotFound",
+            "description": "<p>Recurso não encontrado.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotFound:",
+          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
           "type": "json"
         }
       ]
@@ -177,7 +166,7 @@ define({ "api": [
             "group": "Error 4xx",
             "optional": false,
             "field": "Forbidden",
-            "description": "<p>O cartão não pertence ao usuário autenticado.</p>"
+            "description": "<p>Esse cartão não pertence ao usuário autenticado.</p>"
           },
           {
             "group": "Error 4xx",
@@ -204,7 +193,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450\n     }",
           "type": "json"
         }
       ]
@@ -233,7 +222,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Request-Example:",
-          "content": "    {\n      \"price\": 100,\n\t\t\"wallet_id\": 1\n    }",
+          "content": "{\n  \"price\": 100\n}",
           "type": "json"
         }
       ]
@@ -242,7 +231,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n    [\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }\n    ]",
+          "content": "    HTTP/1.1 200 OK\n    [\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450\n     }\n    ]",
           "type": "json"
         }
       ]
@@ -250,12 +239,6 @@ define({ "api": [
     "error": {
       "fields": {
         "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>O parametro 'wallet_id' informado não pertence ao usuário autenticado.</p>"
-          },
           {
             "group": "Error 4xx",
             "optional": false,
@@ -271,11 +254,6 @@ define({ "api": [
         ]
       },
       "examples": [
-        {
-          "title": "Forbidden:",
-          "content": "    HTTP/1.1 403 Forbidden\n    {\n\t\"error_code\": \"FORBIDDEN\",\n\t\"message\": \"You're not allowed to do this.\",\n\t\"developer_message\": \"This wallet does not belong to the authenticated user.\"\n    }",
-          "type": "json"
-        },
         {
           "title": "NotFound:",
           "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
@@ -342,7 +320,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }",
           "type": "json"
         }
       ]
@@ -361,47 +339,17 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/cards/wallets/:wallet_id",
-    "title": "GetWalletCards",
+    "url": "/cards",
+    "title": "GetCards",
     "version": "1.0.0",
-    "name": "GetWalletCards",
-    "description": "<p>Retorna a lista de cartões de uma determinada carteira.</p>",
+    "name": "GetCards",
+    "description": "<p>Retorna todos os cartões da carteira do usuario autenticado.</p>",
     "group": "Card",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>O cartão não pertence ao usuário autenticado.</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotFound",
-            "description": "<p>Recurso não encontrado.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Forbidden:",
-          "content": "    HTTP/1.1 403 Forbidden\n    {\n\t\"error_code\": \"FORBIDDEN\",\n\t\"message\": \"You're not allowed to do this.\",\n\t\"developer_message\": \"This wallet does not belong to the authenticated user.\"\n    }",
-          "type": "json"
-        },
-        {
-          "title": "NotFound:",
-          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
-          "type": "json"
-        }
-      ]
-    },
     "success": {
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n    [\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }\n    ]",
+          "content": "    HTTP/1.1 200 OK\n    [\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450\n     }\n    ]",
           "type": "json"
         }
       ]
@@ -480,7 +428,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 1,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450,\n\t \"wallet_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 1,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 500,\n\t \"avaliable_limit\": 450\n     }",
           "type": "json"
         }
       ]
@@ -512,7 +460,7 @@ define({ "api": [
             "group": "Error 4xx",
             "optional": false,
             "field": "Forbidden",
-            "description": "<p>Essa carteira não pertence ao usuário autenticado.</p>"
+            "description": "<p>Este cartão não pertence ao usuário autenticado.</p>"
           },
           {
             "group": "Error 4xx",
@@ -539,7 +487,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Request-Example:",
-          "content": "     {\n\t \"real_limit\": 700,\n\t \"current_limit\": 550,\n     }",
+          "content": "     {\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 700,\n\t \"avaliable_limit\": 550\n     }",
           "type": "json"
         }
       ]
@@ -548,7 +496,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"cvv\": 123,\n\t \"real_limit\": 700,\n\t \"avaliable_limit\": 550,\n\t \"wallet_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 3,\n\t \"number\": \"1234123412341232\",\n\t \"due_date\": 11,\n\t \"expiration_month\": 8,\n\t \"expiration_year\": 16,\n\t \"currency\": \"BRL\",\n\t \"cvv\": 123,\n\t \"real_limit\": 700,\n\t \"avaliable_limit\": 550\n     }",
           "type": "json"
         }
       ]
@@ -568,7 +516,7 @@ define({ "api": [
   {
     "type": "get",
     "url": "/me",
-    "title": "GetAuthenticatedPerson",
+    "title": "GetPerson",
     "version": "1.0.0",
     "name": "GetAuthenticatedPerson",
     "description": "<p>Retorna o usuário autenticado.</p>",
@@ -595,38 +543,9 @@ define({ "api": [
     }
   },
   {
-    "type": "get",
-    "url": "/me/wallets",
-    "title": "GetAuthenticatedPersonWallets",
-    "version": "1.0.0",
-    "name": "GetAuthenticatedPersonWallets",
-    "description": "<p>Retorna as carteiras do usuário autenticado.</p>",
-    "group": "Person",
-    "success": {
-      "examples": [
-        {
-          "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n    [\n     {\n\t \"id\": 3,\n\t \"id\": 1,\n\t \"real_limit\": 0,\n\t \"maximum_limit\": 0,\n\t \"person_id\": 1\n     },\n     {\n\t \"id\": 4,\n\t \"real_limit\": 0,\n\t \"maximum_limit\": 0,\n\t \"person_id\": 1\n     }",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "./controllers/person.go",
-    "groupTitle": "Person",
-    "header": {
-      "examples": [
-        {
-          "title": "Headers:",
-          "content": "    {\n      \"Authorization\": \"Bearer {{TOKEN}}\",\n\t\t\"Content-Type\": \"application/json\"\n    }",
-          "type": "json"
-        }
-      ]
-    }
-  },
-  {
     "type": "put",
     "url": "/me",
-    "title": "UpdateAuthenticatedPerson",
+    "title": "UpdatePerson",
     "version": "1.0.0",
     "name": "UpdateAuthenticatedPerson",
     "description": "<p>Atualiza o usuário autenticado.</p>",
@@ -662,136 +581,18 @@ define({ "api": [
     }
   },
   {
-    "type": "post",
-    "url": "/wallets",
-    "title": "CreateWallet",
-    "version": "1.0.0",
-    "name": "CreateWallet",
-    "description": "<p>Cria uma nova carteira.</p>",
-    "group": "Wallet",
-    "success": {
-      "examples": [
-        {
-          "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 5,\n\t \"current_limit\": 0,\n\t \"maximum_limit\": 0,\n\t \"avaliable_limit\": 0,\n\t \"person_id\": 1\n     }",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "./controllers/wallet.go",
-    "groupTitle": "Wallet",
-    "header": {
-      "examples": [
-        {
-          "title": "Headers:",
-          "content": "    {\n      \"Authorization\": \"Bearer {{TOKEN}}\",\n\t\t\"Content-Type\": \"application/json\"\n    }",
-          "type": "json"
-        }
-      ]
-    }
-  },
-  {
-    "type": "delete",
-    "url": "/wallets/:wallet_id",
-    "title": "DeleteWallet",
-    "version": "1.0.0",
-    "name": "DeleteWallet",
-    "description": "<p>Apaga a carteira com o id passado por parametro.</p>",
-    "group": "Wallet",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>A carteira não pertence ao usuário autenticado.</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotFound",
-            "description": "<p>Recurso não encontrado.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Forbidden:",
-          "content": "    HTTP/1.1 403 Forbidden\n    {\n\t\"error_code\": \"FORBIDDEN\",\n\t\"message\": \"You're not allowed to do this.\",\n\t\"developer_message\": \"This wallet does not belong to the authenticated user.\"\n    }",
-          "type": "json"
-        },
-        {
-          "title": "NotFound:",
-          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
-          "type": "json"
-        }
-      ]
-    },
-    "success": {
-      "examples": [
-        {
-          "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 1,\n\t \"current_limit\": 100,\n\t \"maximum_limit\": 200,\n\t \"avaliable_limit\": 100,\n\t \"person_id\": 1\n     }",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "./controllers/wallet.go",
-    "groupTitle": "Wallet",
-    "header": {
-      "examples": [
-        {
-          "title": "Headers:",
-          "content": "    {\n      \"Authorization\": \"Bearer {{TOKEN}}\",\n\t\t\"Content-Type\": \"application/json\"\n    }",
-          "type": "json"
-        }
-      ]
-    }
-  },
-  {
     "type": "get",
-    "url": "/wallets/:wallet_id",
+    "url": "/wallets",
     "title": "GetWallet",
     "version": "1.0.0",
-    "name": "GetWallet",
-    "description": "<p>Retorna a carteira com o id passado por parametro.</p>",
+    "name": "GetAuthenticatedPersonWallet",
+    "description": "<p>Retorna a carteira do usuário autenticado.</p>",
     "group": "Wallet",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>A carteira não pertence ao usuário autenticado.</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotFound",
-            "description": "<p>Recurso não encontrado.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Forbidden:",
-          "content": "    HTTP/1.1 403 Forbidden\n    {\n\t\"error_code\": \"FORBIDDEN\",\n\t\"message\": \"You're not allowed to do this.\",\n\t\"developer_message\": \"This wallet does not belong to the authenticated user.\"\n    }",
-          "type": "json"
-        },
-        {
-          "title": "NotFound:",
-          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
-          "type": "json"
-        }
-      ]
-    },
     "success": {
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 1,\n\t \"current_limit\": 750,\n\t \"maximum_limit\": 1000,\n\t \"avaliable_limit\": 250,\n\t \"person_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n    {\n\t \"current_limit\": 700,\n\t \"maximum_limit\": 1000\n\t \"avaliable_limit\": 0,\n    }",
           "type": "json"
         }
       ]
@@ -810,42 +611,12 @@ define({ "api": [
   },
   {
     "type": "put",
-    "url": "/wallets/:wallet_id",
+    "url": "/wallets",
     "title": "UpdateWallet",
     "version": "1.0.0",
-    "name": "UpdateWallet",
-    "description": "<p>Atualizar uma carteira.</p>",
+    "name": "UpdateAuthenticatedPersonWallet",
+    "description": "<p>Atualiza a carteira do usuário autenticado.</p>",
     "group": "Wallet",
-    "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "Forbidden",
-            "description": "<p>Essa carteira não pertence ao usuário autenticado.</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "optional": false,
-            "field": "NotFound",
-            "description": "<p>Recurso não encontrado.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Forbidden:",
-          "content": "    HTTP/1.1 403 Forbidden\n    {\n\t\"error_code\": \"FORBIDDEN\",\n\t\"message\": \"You're not allowed to do this.\",\n\t\"developer_message\": \"This wallet does not belong to the authenticated user.\"\n    }",
-          "type": "json"
-        },
-        {
-          "title": "NotFound:",
-          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
-          "type": "json"
-        }
-      ]
-    },
     "parameter": {
       "examples": [
         {
@@ -859,7 +630,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 5,\n\t \"current_limit\": 700,\n\t \"maximum_limit\": 2000,\n\t \"avaliable_limit\": 0,\n\t \"person_id\": 1\n     }",
+          "content": "    HTTP/1.1 200 OK\n     {\n\t \"id\": 5,\n\t \"current_limit\": 700,\n\t \"maximum_limit\": 2000,\n\t \"avaliable_limit\": 0\n     }",
           "type": "json"
         }
       ]
@@ -871,6 +642,25 @@ define({ "api": [
         {
           "title": "Headers:",
           "content": "    {\n      \"Authorization\": \"Bearer {{TOKEN}}\",\n\t\t\"Content-Type\": \"application/json\"\n    }",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "NotFound",
+            "description": "<p>Recurso não encontrado.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "NotFound:",
+          "content": "    HTTP/1.1 404 Not Found\n    {\n\t\"error_code\": \"NOT_FOUND\",\n\t\"message\": \"the requested resource was not found.\"\n    }",
           "type": "json"
         }
       ]

@@ -19,15 +19,13 @@ type cardDAO interface {
 	// GetBestCardsByWallet returns the best cards to a order in a wallet.
 	GetBestCardsByWallet(rs app.RequestScope, wallet models.Wallet) ([]models.Card, error)
 	// GetCardsByWallet returns the cards of a wallet.
-	GetCardsByWallet(rs app.RequestScope, wallet models.Wallet) (*[]models.Card, error)
+	GetCardsByWallet(rs app.RequestScope, wallet models.Wallet) ([]models.Card, error)
 	//GetWalletCardsLimits return the limits of a wallet with the specified ID
 	GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error)
 	// CreateCard saves a new card in the storage.
 	CreateCard(rs app.RequestScope, card *models.Card) error
 	// UpdateCard updates the card with given ID in the storage.
 	UpdateCard(rs app.RequestScope, card_id int, card *models.Card) error
-	// UpdateCard updates the card with given old_card in the storage.
-	UpdateCardByCard(rs app.RequestScope, old_card *models.Card, card *models.Card) error
 	// DeleteCard removes the card with given ID from the storage.
 	DeleteCard(rs app.RequestScope, card_id int) error
 }
@@ -35,6 +33,13 @@ type cardDAO interface {
 // CardService provides services related with cards.
 type CardService struct {
 	dao cardDAO
+}
+
+type By func(c1, c2 *models.Card) bool
+
+type cardSorter struct {
+	cards []models.Card
+	by    func(p1, p2 *models.Card) bool
 }
 
 // NewCardService creates a new CardService with the given card DAO.
@@ -49,7 +54,7 @@ func (s *CardService) GetCard(rs app.RequestScope, card_id int) (*models.Card, e
 		return nil, err
 	}
 
-	_, walletErr := GetWalletByCard(rs, card)
+	_, walletErr := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, card.WalletId)
 	if walletErr != nil {
 		return nil, walletErr
 	}
@@ -64,7 +69,7 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 		return nil, err
 	}
 
-	_, walletErr := GetWalletByCard(rs, card)
+	_, walletErr := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, card.WalletId)
 	if walletErr != nil {
 		return nil, walletErr
 	}
@@ -88,17 +93,14 @@ func (s *CardService) PayCreditCard(rs app.RequestScope, order models.Order) (*m
 }
 
 // GetBestCards returns the best cards for a order in a wallet.
-func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[]models.Card, error) {
-	if err := order.Validate(); err != nil {
-		return nil, err
-	}
+func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) ([]models.Card, error) {
 
-	wallet, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, order.WalletId)
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetAuthenticatedPersonWallet(rs)
 	if err != nil {
 		return nil, err
 	}
 
-	cards, err := s.dao.GetBestCardsByWallet(rs, *wallet)
+	cards, err := s.dao.GetBestCardsByWallet(rs, *&wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +114,7 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 	//assim ele é mais longe, então adiciono 100 ao valor para fica maior
 	for i, card := range cards {
 		if card.DueDate <= today {
-			cards[i].DueDate += card.DueDate + 100
+			cards[i].DueDate += 100
 		}
 	}
 
@@ -125,10 +127,6 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 	By(dueDate).Sort(cards)
 
 	for _, card := range cards {
-		if price <= 0 {
-			break
-		}
-
 		if price > card.AvaliableLimit {
 			bestCards = append(bestCards, card)
 			price -= card.AvaliableLimit
@@ -143,14 +141,100 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) (*[
 		return nil, errors.NewAPIError(http.StatusBadRequest, "ERROR", errors.Params{"message": "You don't have enough credit to make this purchase.", "developer_message": ""})
 	}
 
-	return &bestCards, err
+	return bestCards, nil
 }
 
-type By func(c1, c2 *models.Card) bool
+// GetCard returns the card with the specified the card ID.
+func (s *CardService) GetAuthenticatedPersonCards(rs app.RequestScope) ([]models.Card, error) {
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetAuthenticatedPersonWallet(rs)
+	if err != nil {
+		return nil, err
+	}
 
-type cardSorter struct {
-	cards []models.Card
-	by    func(p1, p2 *models.Card) bool
+	return s.dao.GetCardsByWallet(rs, wallet)
+}
+
+// CreateCard creates a new card.
+func (s *CardService) CreateCard(rs app.RequestScope, card *models.Card) (*models.Card, error) {
+	if validationErr := card.Validate(); validationErr != nil {
+		return nil, validationErr
+	}
+
+	wallet, err := NewWalletService(daos.NewWalletDAO()).GetAuthenticatedPersonWallet(rs)
+	if err != nil {
+		return nil, err
+	}
+
+	card.WalletId = wallet.Id
+	if err := s.dao.CreateCard(rs, card); err != nil {
+		return nil, err
+	}
+
+	if err := s.UpdateWalletLimits(rs, wallet.Id); err != nil {
+		return nil, err
+	}
+
+	return s.dao.GetCard(rs, card.Id)
+}
+
+// UpdateCard updates the card with the specified ID.
+func (s *CardService) UpdateCard(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error) {
+	old_card, err := s.GetCard(rs, card_id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.dao.UpdateCard(rs, old_card.Id, card); err != nil {
+		return nil, err
+	}
+
+	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
+		return nil, err
+	}
+
+	return s.dao.GetCard(rs, card_id)
+}
+
+// DeleteCard deletes the card with the specified ID.
+func (s *CardService) DeleteCard(rs app.RequestScope, card_id int) (*models.Card, error) {
+	card, err := s.GetCard(rs, card_id)
+	if err != nil {
+		return nil, err
+	}
+
+	if cardErr := s.dao.DeleteCard(rs, card_id); cardErr != nil {
+		return nil, cardErr
+	}
+
+	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
+		return nil, err
+	}
+
+	return card, nil
+}
+
+//Retorna os limites dos cartoes de uma carteira
+func (s *CardService) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
+	_, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	card, err := s.dao.GetWalletCardsLimits(rs, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	return card, nil
+}
+
+func (s *CardService) UpdateWalletLimits(rs app.RequestScope, walletId int) error {
+	card, err := s.GetWalletCardsLimits(rs, walletId)
+	if err != nil {
+		return err
+	}
+
+	return NewWalletService(daos.NewWalletDAO()).UpdateWalletLimits(rs, *card)
 }
 
 func (by By) Sort(cards []models.Card) {
@@ -174,113 +258,4 @@ func (s *cardSorter) Swap(i, j int) {
 // Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
 func (s *cardSorter) Less(i, j int) bool {
 	return s.by(&s.cards[i], &s.cards[j])
-}
-
-// GetCard returns the card with the specified the card ID.
-func (s *CardService) GetCardsByWalletId(rs app.RequestScope, walletId int) (*[]models.Card, error) {
-	wallet, err := NewWalletService(daos.NewWalletDAO()).GetWallet(rs, walletId)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.dao.GetCardsByWallet(rs, *wallet)
-}
-
-// CreateCard creates a new card.
-func (s *CardService) CreateCard(rs app.RequestScope, card *models.Card) (*models.Card, error) {
-	if validationErr := card.Validate(); validationErr != nil {
-		return nil, validationErr
-	}
-
-	_, err := GetWalletByCard(rs, card)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.dao.CreateCard(rs, card); err != nil {
-		return nil, err
-	}
-
-	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
-		return nil, err
-	}
-
-	return s.dao.GetCard(rs, card.Id)
-}
-
-// UpdateCard updates the card with the specified ID.
-func (s *CardService) UpdateCard(rs app.RequestScope, card_id int, card *models.Card) (*models.Card, error) {
-	old_card, err := s.GetCard(rs, card_id)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.dao.UpdateCardByCard(rs, old_card, card); err != nil {
-		return nil, err
-	}
-
-	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
-		return nil, err
-	}
-
-	return s.dao.GetCard(rs, card_id)
-}
-
-// DeleteCard deletes the card with the specified ID.
-func (s *CardService) DeleteCard(rs app.RequestScope, card_id int) (*models.Card, error) {
-	card, err := s.GetCard(rs, card_id)
-	if err != nil {
-		return nil, err
-	}
-
-	_, walletErr := GetWalletByCard(rs, card)
-	if walletErr != nil {
-		return nil, walletErr
-	}
-
-	if cardErr := s.dao.DeleteCard(rs, card_id); cardErr != nil {
-		return nil, cardErr
-	}
-
-	if err := s.UpdateWalletLimits(rs, card.WalletId); err != nil {
-		return nil, err
-	}
-
-	return card, nil
-}
-
-//Retorna os limites dos cartoes de uma carteira
-func (s *CardService) GetWalletCardsLimits(rs app.RequestScope, walletId int) (*models.Card, error) {
-	card, err := s.dao.GetWalletCardsLimits(rs, walletId)
-	if err != nil {
-		return nil, err
-	}
-
-	return card, nil
-}
-
-func (s *CardService) UpdateWalletLimits(rs app.RequestScope, walletId int) error {
-	card, err := s.GetWalletCardsLimits(rs, walletId)
-	if err != nil {
-		return err
-	}
-
-	return NewWalletService(daos.NewWalletDAO()).UpdateWalletLimits(rs, *card)
-}
-
-//Retorna a carteira que o cartão faz parte
-func GetWalletByCard(rs app.RequestScope, card *models.Card) (*models.Wallet, error) {
-	walletDao := daos.NewWalletDAO()
-	wallet, err := NewWalletService(walletDao).GetWalletThrowVerification(rs, card.WalletId)
-	if err != nil {
-		return nil, err
-	}
-
-	//Verifica se a carteira pertence a pessoa que está autenticada
-	verificationErr := VerifyPersonOwner(rs, wallet.PersonId, "card")
-	if verificationErr != nil {
-		return nil, verificationErr
-	}
-
-	return wallet, nil
 }
