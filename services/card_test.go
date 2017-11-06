@@ -48,7 +48,7 @@ func TestGetCardWithErrorCardDoesNotBelongToTheAuthenticatedUser(t *testing.T) {
 	service := NewCardService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.GetCard(rs, 4)
+		card, err := service.GetCard(rs, 5)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
@@ -102,7 +102,7 @@ func TestPayCreditCardWithErrorCardNotBelongToThisPerson(t *testing.T) {
 	service := NewCardService(dao)
 	order := models.Order{
 		Price:  100,
-		CardId: 4,
+		CardId: 5,
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
@@ -202,7 +202,7 @@ func TestGetAuthenticatedPersonCards(t *testing.T) {
 		cards, err := service.GetAuthenticatedPersonCards(rs)
 		assert.Nil(t, err)
 		if assert.NotNil(t, cards) {
-			assert.Equal(t, 3, len(*&cards))
+			assert.Equal(t, 4, len(*&cards))
 		}
 	})
 
@@ -367,7 +367,7 @@ func TestUpdateCardWithErrorCardNotBelongToTheAuthenticatedPerson(t *testing.T) 
 	}
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.UpdateCard(rs, 4, &tempCard)
+		card, err := service.UpdateCard(rs, 5, &tempCard)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())
@@ -397,7 +397,7 @@ func TestDeleteCardWithErrorCardNotBelongToTheAuthenticatedPerson(t *testing.T) 
 	service := NewCardService(dao)
 
 	testDBCall(db, func(rs app.RequestScope, c routing.Context) {
-		card, err := service.DeleteCard(rs, 4)
+		card, err := service.DeleteCard(rs, 5)
 		assert.Nil(t, card)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, "You're not allowed to do this.", err.Error())

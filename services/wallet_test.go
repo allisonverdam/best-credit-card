@@ -92,7 +92,7 @@ func TestUpdateAuthenticatedPersonWallet(t *testing.T) {
 		wallet, err := service.UpdateAuthenticatedPersonWallet(rs, &wallet)
 		assert.Nil(t, err)
 		if assert.NotNil(t, wallet) {
-			assert.Equal(t, 1200.0, wallet.MaximumLimit)
+			assert.Equal(t, 1550.0, wallet.MaximumLimit)
 		}
 	})
 
@@ -103,7 +103,7 @@ func TestUpdateAuthenticatedPersonWalletWithErrorInvalidCurrentLimit(t *testing.
 	service := NewWalletService(dao)
 	db := testdata.ResetDB()
 	wallet := models.Wallet{
-		CurrentLimit: 1000,
+		CurrentLimit: 2000,
 		PersonId:     1,
 	}
 
@@ -111,7 +111,7 @@ func TestUpdateAuthenticatedPersonWalletWithErrorInvalidCurrentLimit(t *testing.
 		wallet, err := service.UpdateAuthenticatedPersonWallet(rs, &wallet)
 		assert.Nil(t, wallet)
 		if assert.NotNil(t, err) {
-			assert.Equal(t, "Attempted to increase to a higher limit than available. This is your avaliable limit: R$830. Pay some credit card to release more credit.", err.Error())
+			assert.Equal(t, "Attempted to increase to a higher limit than available. This is your avaliable limit: R$1030. Pay some credit card to release more credit.", err.Error())
 		}
 	})
 
