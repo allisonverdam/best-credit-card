@@ -55,7 +55,7 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	router.Get("/", func(c *routing.Context) error {
 		c.Abort()
-		return c.Write("Seja bem vindo!")
+		return c.Write("Hello!")
 	})
 
 	/**
