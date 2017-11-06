@@ -35,6 +35,13 @@ type CardService struct {
 	dao cardDAO
 }
 
+type By func(c1, c2 *models.Card) bool
+
+type cardSorter struct {
+	cards []models.Card
+	by    func(p1, p2 *models.Card) bool
+}
+
 // NewCardService creates a new CardService with the given card DAO.
 func NewCardService(dao cardDAO) *CardService {
 	return &CardService{dao}
@@ -107,7 +114,7 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) ([]
 	//assim ele é mais longe, então adiciono 100 ao valor para fica maior
 	for i, card := range cards {
 		if card.DueDate <= today {
-			cards[i].DueDate += card.DueDate + 100
+			cards[i].DueDate += 100
 		}
 	}
 
@@ -135,36 +142,6 @@ func (s *CardService) GetBestCards(rs app.RequestScope, order *models.Order) ([]
 	}
 
 	return bestCards, nil
-}
-
-type By func(c1, c2 *models.Card) bool
-
-type cardSorter struct {
-	cards []models.Card
-	by    func(p1, p2 *models.Card) bool
-}
-
-func (by By) Sort(cards []models.Card) {
-	ps := &cardSorter{
-		cards: cards,
-		by:    by, // Metodo definido para fazer a ordenação
-	}
-	sort.Sort(ps)
-}
-
-// Len is part of sort.Interface.
-func (s *cardSorter) Len() int {
-	return len(s.cards)
-}
-
-// Swap is part of sort.Interface.
-func (s *cardSorter) Swap(i, j int) {
-	s.cards[i], s.cards[j] = s.cards[j], s.cards[i]
-}
-
-// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
-func (s *cardSorter) Less(i, j int) bool {
-	return s.by(&s.cards[i], &s.cards[j])
 }
 
 // GetCard returns the card with the specified the card ID.
@@ -258,4 +235,27 @@ func (s *CardService) UpdateWalletLimits(rs app.RequestScope, walletId int) erro
 	}
 
 	return NewWalletService(daos.NewWalletDAO()).UpdateWalletLimits(rs, *card)
+}
+
+func (by By) Sort(cards []models.Card) {
+	ps := &cardSorter{
+		cards: cards,
+		by:    by, // Metodo definido para fazer a ordenação
+	}
+	sort.Sort(ps)
+}
+
+// Len is part of sort.Interface.
+func (s *cardSorter) Len() int {
+	return len(s.cards)
+}
+
+// Swap is part of sort.Interface.
+func (s *cardSorter) Swap(i, j int) {
+	s.cards[i], s.cards[j] = s.cards[j], s.cards[i]
+}
+
+// Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
+func (s *cardSorter) Less(i, j int) bool {
+	return s.by(&s.cards[i], &s.cards[j])
 }
