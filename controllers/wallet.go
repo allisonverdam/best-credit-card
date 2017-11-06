@@ -29,18 +29,19 @@ func ServeWalletResource(rg *routing.RouteGroup, service walletService) {
 }
 
 /**
-* @api {get} /wallets GetAuthenticatedPersonWallet
+* @api {get} /wallets GetWallet
 * @apiVersion 1.0.0
 * @apiName GetAuthenticatedPersonWallet
 * @apiDescription Retorna a carteira do usuário autenticado.
-* @apiGroup Person
+* @apiGroup Wallet
 * @apiUse AuthRequired
 *
 * @apiSuccessExample Success-Response:
 *     HTTP/1.1 200 OK
 *     {
-*	 "real_limit": 700,
-*	 "maximum_limit": 700
+*	 "current_limit": 700,
+*	 "maximum_limit": 1000
+*	 "avaliable_limit": 0,
 *     }
 **/
 func (r *walletResource) GetAuthenticatedPersonWallet(c *routing.Context) error {
@@ -53,7 +54,7 @@ func (r *walletResource) GetAuthenticatedPersonWallet(c *routing.Context) error 
 }
 
 /**
-* @api {put} /wallets UpdateAuthenticatedPersonWallet
+* @api {put} /wallets UpdateWallet
 * @apiVersion 1.0.0
 * @apiName UpdateAuthenticatedPersonWallet
 * @apiDescription Atualiza a carteira do usuário autenticado.
@@ -72,8 +73,7 @@ func (r *walletResource) GetAuthenticatedPersonWallet(c *routing.Context) error 
 *	 "id": 5,
 *	 "current_limit": 700,
 *	 "maximum_limit": 2000,
-*	 "avaliable_limit": 0,
-*	 "person_id": 1
+*	 "avaliable_limit": 0
 *      }
 **/
 func (r *walletResource) UpdateAuthenticatedPersonWallet(c *routing.Context) error {

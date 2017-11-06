@@ -30,7 +30,7 @@ type (
 func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 	r := &cardResource{service}
 	rg.Get("/cards/<card_id>", r.GetCard)
-	rg.Get("/cards", r.GetWalletCards)
+	rg.Get("/cards", r.GetCards)
 	rg.Post("/cards", r.CreateCard)
 	rg.Post("/cards/pay", r.PayCreditCard)
 	rg.Post("/cards/best-card", r.GetBestCards)
@@ -58,11 +58,11 @@ func ServeCardResource(rg *routing.RouteGroup, service cardService) {
 *     [
 *      {
 *	 "id": 3,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
 *	 "avaliable_limit": 450
@@ -120,11 +120,11 @@ func (r *cardResource) GetBestCards(c *routing.Context) error {
 *     HTTP/1.1 200 OK
 *      {
 *	 "id": 1,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
 *	 "avaliable_limit": 450
@@ -168,11 +168,11 @@ func (r *cardResource) PayCreditCard(c *routing.Context) error {
 *     HTTP/1.1 200 OK
 *      {
 *	 "id": 3,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
 *	 "avaliable_limit": 450,
@@ -194,9 +194,9 @@ func (r *cardResource) GetCard(c *routing.Context) error {
 }
 
 /**
-* @api {get} /cards GetWalletCards
+* @api {get} /cards GetCards
 * @apiVersion 1.0.0
-* @apiName GetWalletCards
+* @apiName GetCards
 * @apiDescription Retorna todos os cartões da carteira do usuario autenticado.
 * @apiGroup Card
 * @apiUse AuthRequired
@@ -206,18 +206,18 @@ func (r *cardResource) GetCard(c *routing.Context) error {
 *     [
 *      {
 *	 "id": 3,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
 *	 "avaliable_limit": 450
 *      }
 *     ]
 **/
-func (r *cardResource) GetWalletCards(c *routing.Context) error {
+func (r *cardResource) GetCards(c *routing.Context) error {
 	cards, err := r.service.GetAuthenticatedPersonCards(app.GetRequestScope(c))
 	if err != nil {
 		return err
@@ -237,14 +237,13 @@ func (r *cardResource) GetWalletCards(c *routing.Context) error {
 *
 * @apiParamExample {json} Request-Example:
 *      {
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
-*	 "currency": BRL,
 *	 "avaliable_limit": 450
 *      }
 *
@@ -252,11 +251,11 @@ func (r *cardResource) GetWalletCards(c *routing.Context) error {
 *     HTTP/1.1 200 OK
 *      {
 *	 "id": 3,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
 *	 "avaliable_limit": 450
@@ -299,11 +298,11 @@ func (r *cardResource) CreateCard(c *routing.Context) error {
 *     }
 * @apiParamExample {json} Request-Example:
 *      {
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 700,
 *	 "avaliable_limit": 550
@@ -313,10 +312,11 @@ func (r *cardResource) CreateCard(c *routing.Context) error {
 *     HTTP/1.1 200 OK
 *      {
 *	 "id": 3,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 700,
 *	 "avaliable_limit": 550
@@ -362,11 +362,11 @@ func (r *cardResource) UpdateCard(c *routing.Context) error {
 *     HTTP/1.1 200 OK
 *      {
 *	 "id": 3,
-*	 "number": 1234123412341232,
+*	 "number": "1234123412341232",
 *	 "due_date": 11,
 *	 "expiration_month": 8,
 *	 "expiration_year": 16,
-*	 "currency": BRL,
+*	 "currency": "BRL",
 *	 "cvv": 123,
 *	 "real_limit": 500,
 *	 "avaliable_limit": 450

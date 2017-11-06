@@ -27,7 +27,7 @@ func ServePersonResource(rg *routing.RouteGroup, service personService) {
 }
 
 /**
-* @api {get} /me GetAuthenticatedPerson
+* @api {get} /me GetPerson
 * @apiVersion 1.0.0
 * @apiName GetAuthenticatedPerson
 * @apiDescription Retorna o usuário autenticado.
@@ -53,7 +53,7 @@ func (r *personResource) GetAuthenticatedPerson(c *routing.Context) error {
 }
 
 /**
-* @api {put} /me UpdateAuthenticatedPerson
+* @api {put} /me UpdatePerson
 * @apiVersion 1.0.0
 * @apiName UpdateAuthenticatedPerson
 * @apiDescription Atualiza o usuário autenticado.
