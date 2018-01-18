@@ -10,34 +10,34 @@ A api atualmente está rodando em um servidor no heroku no seguinte endereço: h
 
 É necessário ter o Go instalado no seu computador,
 se essa é a primeira vez que você vai usar go, siga [as instruções](https://golang.org/doc/install) para
-instalar. No projeto usei a versão 1.8.
+instalar. Utilizamos a versão 1.8.
 
 Depois de instalar execute os seguintes comandos:
 ```shell
 # pegando o projeto
 go get https://github.com/allisonverdam/best-credit-card
 
-# instale o glide, ele facilita umas coisas
+# utilizaremos o glide para fazer o controle de versão das dependencias do projeto
 go get -u github.com/Masterminds/glide
 
 # entre na pasta do projeto e baixe as dependencias
 cd $GOPATH/allisonverdam/best-credit-card
 make depends   # ou "glide up"
 ```
-Agora temos que criar um database no postgres, eu escolhi o nome `best_credit_card`, tem um script pronto para gerar nosso banco, está na pasta `testdata/db.sql`.
+Agora temos que criar um database no postgres, escolhemos o nome `best_credit_card`, tem um script pronto para gerar nosso banco, está na pasta `testdata/db.sql`.
 
 Você pode configurar a conexão com o banco no arquivo `config/app.yaml` ou alterando a variavel de ambiente `API_DSN` assim: 
 ```
 postgres://<username>:<password>@<server-address>:<server-port>/<db-name>
 ```
 
-Agora nós ja podemos executar o projeto, execute o comando abaixo.
+Agora já podemos executar o projeto, execute o comando abaixo.
 
 ```shell
 go run main.go
 ```
 
-ou simplemente `make` se estiver disponível no seu computador.
+Ou simplemente `make` se estiver disponível no seu computador.
 
 ```shell
 make
